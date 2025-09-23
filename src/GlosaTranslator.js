@@ -5,16 +5,13 @@ function GlosaTranslator(endpoint) {
 }
 
 GlosaTranslator.prototype.translate = function (text, domain, callback) {
-  let time = 10;
+  const time = 30000; // 30s
   let hasTimeout = false;
-  const size = text.split(' ').length;
-
-  if (size > 50) time += size * 0.4 / 10;
 
   const timeout = setTimeout(() => {
     hasTimeout = true;
     callback(undefined, 'timeout_error');
-  }, time * 1000);
+  }, time);
 
   request.post(this.endpoint, { text: text, domain: domain }).end(
     function (err, response) {
