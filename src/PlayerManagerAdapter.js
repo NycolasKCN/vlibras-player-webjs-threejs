@@ -1,8 +1,10 @@
-var window = require("window");
-var inherits = require("inherits");
-var EventEmitter = require("events").EventEmitter;
+const window = require("window");
+const inherits = require("inherits");
+const EventEmitter = require("events").EventEmitter;
 
-var GAME_OBJECT = "PlayerManager";
+const GAME_OBJECT = "PlayerManager";
+const EMOTION_OBJECT = "EmotionBridge";
+const CUSTOMIZATION_OBJECT = "CustomizationBridge";
 
 function PlayerManagerAdapter() {
   if (PlayerManagerAdapter.instance) return PlayerManagerAdapter.instance;
@@ -30,16 +32,17 @@ PlayerManagerAdapter.prototype._send = function (method, params) {
   this.player.SendMessage(GAME_OBJECT, method, params);
 };
 
+PlayerManagerAdapter.prototype.applyEmotion = function (action, intensity) {
+  this.player.SendMessage(EMOTION_OBJECT, action, intensity);
+};
+
 PlayerManagerAdapter.prototype.play = function (glosa) {
-  if (glosa) {
-    this._send("playNow", glosa);
-  } else {
-    this._send("setPauseState", 0);
-  }
+  if (glosa) this._send("playNow", glosa);
+  else this._send("setPauseState", 0);
 };
 
 PlayerManagerAdapter.prototype.setPersonalization = function (personalization) {
-  this.player.SendMessage("CustomizationBridge", "setURL", personalization);
+  this.player.SendMessage(CUSTOMIZATION_OBJECT, "setURL", personalization);
 };
 
 PlayerManagerAdapter.prototype.pause = function () {

@@ -164,6 +164,10 @@ Player.prototype.setPersonalization = function (personalization) {
   this.playerManager.setPersonalization(personalization);
 };
 
+Player.prototype.applyEmotion = function (action, intensity) {
+  this.playerManager.applyEmotion(action, intensity);
+};
+
 Player.prototype.changeAvatar = function (avatarName) {
   this.playerManager.changeAvatar(avatarName);
 };
