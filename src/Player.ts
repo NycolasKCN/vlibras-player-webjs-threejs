@@ -4,7 +4,8 @@ import urlJoin from "url-join";
 
 import * as config from "./config";
 import GlosaTranslator from "./GlosaTranslator";
-import PlayerManagerAdapter from "./PlayerManagerAdapter";
+import { PlayerManagerAdapter } from "./PlayerManagerAdapter";
+import UnityPlayerManagerAdapter from "./UnityPlayerManagerAdapter";
 
 const STATUSES = {
   idle: "idle",
@@ -65,7 +66,7 @@ export default class Player extends EventEmitter {
       options
     ) as NormalizedPlayerOptions;
 
-    this.playerManager = PlayerManagerAdapter.getInstance();
+    this.playerManager = new UnityPlayerManagerAdapter();
     this.translator = new GlosaTranslator(this.options.translator);
 
     this.translated = false;
