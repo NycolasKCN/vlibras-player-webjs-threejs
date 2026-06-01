@@ -10,6 +10,7 @@
     "events": "^3.3.0",
     "object-assign": "^4.0.1",
     "superagent": "^1.7.2",
+    "three": "^0.184.0",
     "url-join": "^4.0.0"
   },
   "devDependencies": {
