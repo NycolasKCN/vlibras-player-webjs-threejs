@@ -1,72 +1,54 @@
 import assign from "object-assign";
 import { EventEmitter } from "events";
-import urlJoin from "url-join";
+import { WebGL } from "three/examples/jsm/Addons";
 
 import * as config from "./config";
 import GlosaTranslator from "./GlosaTranslator";
 import { PlayerManagerAdapter } from "./PlayerManagerAdapter";
-import UnityPlayerManagerAdapter from "./UnityPlayerManagerAdapter";
-
-const STATUSES = {
-  idle: "idle",
-  preparing: "preparing",
-  playing: "playing"
-} as const;
-
-type PlayerStatus = (typeof STATUSES)[keyof typeof STATUSES];
-
-type ProgressConstructor = new (wrapper: HTMLElement) => unknown;
-
-export interface PlayerOptions {
-  translator?: string;
-  targetPath?: string;
-  onLoad?: () => void;
-  progress?: ProgressConstructor;
-  [key: string]: unknown;
-}
-
-export interface TranslateOptions {
-  isEnabledStats?: boolean;
-}
-
-export interface PlayOptions {
-  fromTranslation?: boolean;
-  isEnabledStats?: boolean;
-}
-
-type NormalizedPlayerOptions = PlayerOptions & {
-  translator: string;
-  targetPath: string;
-};
+import ThreePlayerManagerAdapter from "./ThreePlayerManagerAdapter";
+import {
+  NormalizedPlayerOptions,
+  PlayerStatus,
+  PlayerOptions,
+  PlayOptions,
+  TranslateOptions,
+  STATUSES,
+} from "./types/player.types";
+import { VLibrasExperience } from "./experience/VLibrasExperience";
+import { createVLibrasExperience } from "./experience/create-vlibras-experience";
 
 let globalGlosaLenght = "";
 
+const CANVAS_ID = "#canvas";
+
 export default class Player extends EventEmitter {
   options: NormalizedPlayerOptions;
-  playerManager: PlayerManagerAdapter;
+  playerManager: PlayerManagerAdapter<VLibrasExperience>;
+  player: VLibrasExperience | null;
+  gameContainer: HTMLDivElement | null;
+  gameCanvas: HTMLCanvasElement | null;
   translator: GlosaTranslator;
   translated: boolean;
   text?: string;
   gloss?: string;
   loaded: boolean;
   progress: unknown | null;
-  gameContainer: HTMLDivElement | null;
-  player: UnityPlayerInstance | null;
   status: PlayerStatus;
   region: string;
   onError!: (reason: string) => void;
 
   constructor(options: PlayerOptions = {}) {
     super();
+    console.log("WebJS Constructor options: ", options);
     this.options = assign(
       {
         translator: config.translatorUrl,
-        targetPath: "target"
+        targetPath: "target",
       },
-      options
+      options,
     ) as NormalizedPlayerOptions;
 
-    this.playerManager = new UnityPlayerManagerAdapter();
+    this.playerManager = new ThreePlayerManagerAdapter();
     this.translator = new GlosaTranslator(this.options.translator);
 
     this.translated = false;
@@ -75,6 +57,7 @@ export default class Player extends EventEmitter {
     this.loaded = false;
     this.progress = null;
     this.gameContainer = null;
+    this.gameCanvas = null;
     this.player = null;
     this.status = STATUSES.idle;
     this.region = "BR";
@@ -108,7 +91,7 @@ export default class Player extends EventEmitter {
           this.emit("animation:end");
           this.changeStatus(STATUSES.idle);
         }
-      }
+      },
     );
 
     this.playerManager.on(
@@ -116,7 +99,7 @@ export default class Player extends EventEmitter {
       (counter: number, glosaLenght: string) => {
         this.emit("response:glosa", counter, glosaLenght);
         globalGlosaLenght = glosaLenght;
-      }
+      },
     );
 
     this.playerManager.on("GetAvatar", (avatar: string) => {
@@ -128,7 +111,10 @@ export default class Player extends EventEmitter {
     });
   }
 
-  translate(text: string, { isEnabledStats = true }: TranslateOptions = {}): void {
+  translate(
+    text: string,
+    { isEnabledStats = true }: TranslateOptions = {},
+  ): void {
     this.emit("translate:start");
 
     if (this.loaded) {
@@ -151,7 +137,7 @@ export default class Player extends EventEmitter {
 
   play(
     glosa?: string | null,
-    { fromTranslation = false, isEnabledStats = true }: PlayOptions = {}
+    { fromTranslation = false, isEnabledStats = true }: PlayOptions = {},
   ): void {
     const isDefaultUrl =
       this.playerManager.currentBaseUrl ===
@@ -159,7 +145,7 @@ export default class Player extends EventEmitter {
 
     if (!isEnabledStats && isDefaultUrl) {
       this.playerManager.setBaseUrl(
-        config.dictionaryStaticUrl + this.region + "/"
+        config.dictionaryStaticUrl + this.region + "/",
       );
     } else if (isEnabledStats && !isDefaultUrl) {
       this.playerManager.setBaseUrl(config.dictionaryUrl + this.region + "/");
@@ -224,6 +210,25 @@ export default class Player extends EventEmitter {
     this.gameContainer = document.createElement("div");
     this.gameContainer.setAttribute("id", "gameContainer");
     this.gameContainer.classList.add("emscripten");
+    assign(this.gameContainer.style, {
+      margin: "0px",
+      padding: "0px",
+      border: "0px",
+      position: "relative",
+      background: "rgb(255, 255, 255)",
+    });
+
+    this.gameCanvas = document.createElement("canvas");
+    this.gameCanvas.setAttribute("id", CANVAS_ID);
+    assign(this.gameCanvas.style, {
+      cursor: "default",
+      minHeight: "calc(0.7 * 450px)",
+      minWidth: "calc(0.9 * 300)",
+      width: "100%",
+      height: "100%",
+      aspectRatio: "auto",
+    });
+    this.gameContainer.appendChild(this.gameCanvas);
 
     if (typeof this.options.progress === "function") {
       this.progress = new this.options.progress(wrapper);
@@ -231,36 +236,27 @@ export default class Player extends EventEmitter {
 
     wrapper.appendChild(this.gameContainer);
 
-    this._initializeTarget();
+    this._initialize();
   }
 
-  private _getTargetScript(): string {
-    return urlJoin(this.options.targetPath, "UnityLoader.js");
-  }
-
-  private _initializeTarget(): void {
-    const targetSetup = urlJoin(this.options.targetPath, "playerweb.json");
-    const targetScript = document.createElement("script");
-
-    targetScript.src = this._getTargetScript();
-    targetScript.onload = () => {
-      this.player = UnityLoader.instantiate("gameContainer", targetSetup, {
-        compatibilityCheck: (_: unknown, accept: () => void, deny: () => void) => {
-          if (UnityLoader.SystemInfo.hasWebGL) {
-            return accept();
-          }
-
-          this.onError("unsupported");
-          alert("Seu navegador não suporta WEBGL");
-          console.error("Seu navegador não suporta WEBGL");
-          deny();
-        }
-      });
-
-      this.playerManager.setPlayerReference(this.player!);
-    };
-
-    document.body.appendChild(targetScript);
+  private async _initialize(): Promise<void> {
+    if (!WebGL.isWebGL2Available()) {
+      this.onError("unsupported");
+      alert("Seu navegador não suporta WEBGL");
+      console.error("Seu navegador não suporta WEBGL");
+      return;
+    }
+    if (!this.gameCanvas) {
+      this.onError("canvas not initialized");
+      alert("Player não foi inicializado corretamente.");
+      console.error("Player não foi inicializado corretamente.");
+      return;
+    }
+    this.player = createVLibrasExperience(this.gameCanvas, config.baseModelUrl);
+    this.playerManager.setPlayerReference(this.player);
+    await this.player.init();
+    this.player.start();
+    this.player.cycleAnimations();
   }
 
   private changeStatus(status: PlayerStatus): void {

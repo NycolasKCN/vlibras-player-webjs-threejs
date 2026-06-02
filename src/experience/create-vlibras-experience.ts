@@ -1,13 +1,19 @@
-import { VLibrasExperience, VLibrasExperienceDependencies } from './VLibrasExperience';
-import { GltfAvatarLoader } from './avatar-loader';
-import { MixerAnimationController } from './animation-controller';
-import { ThreeEnvironmentBuilder } from './environment-builder';
-import { ResponsiveRenderLoop } from './render-loop';
-import { ObjectTreeSceneDebugger } from './scene-debugger';
-import { ThreeSceneBootstrapper } from './scene-bootstrapper';
-import { GltfAnimationLoader } from './animation-loader';
+import {
+  VLibrasExperience,
+  VLibrasExperienceDependencies,
+} from "./VLibrasExperience";
+import { GltfAvatarLoader } from "./avatar-loader";
+import { MixerAnimationController } from "./animation-controller";
+import { ThreeEnvironmentBuilder } from "./environment-builder";
+import { ResponsiveRenderLoop } from "./render-loop";
+import { ObjectTreeSceneDebugger } from "./scene-debugger";
+import { ThreeSceneBootstrapper } from "./scene-bootstrapper";
+import { GltfAnimationLoader } from "./animation-loader";
 
-export function createVLibrasExperience(canvas: HTMLCanvasElement): VLibrasExperience {
+export function createVLibrasExperience(
+  canvas: HTMLCanvasElement,
+  baseModelUrl: string = "/resources/model/base-model.glb",
+): VLibrasExperience {
   const dependencies: VLibrasExperienceDependencies = {
     sceneBootstrapper: new ThreeSceneBootstrapper(),
     environmentBuilder: new ThreeEnvironmentBuilder(),
@@ -16,7 +22,8 @@ export function createVLibrasExperience(canvas: HTMLCanvasElement): VLibrasExper
     animationController: new MixerAnimationController(),
     renderLoop: new ResponsiveRenderLoop(),
     sceneDebugger: new ObjectTreeSceneDebugger(),
-    modelPath: '/model/base-model.glb',
+    modelPath: baseModelUrl,
   };
+  console.log("Resouce created");
   return new VLibrasExperience(canvas, dependencies);
 }

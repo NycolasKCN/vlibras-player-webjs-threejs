@@ -7,12 +7,9 @@ const GAME_OBJECT = "PlayerManager";
 const EMOTION_OBJECT = "EmotionBridge";
 const CUSTOMIZATION_OBJECT = "CustomizationBridge";
 
-export default class UnityPlayerManagerAdapter
-  extends AbstractPlayerManagerAdapter
-{
+export default class UnityPlayerManagerAdapter extends AbstractPlayerManagerAdapter<UnityPlayerInstance> {
   subtitle: boolean;
   currentBaseUrl: string;
-  player?: UnityPlayerInstance;
 
   constructor() {
     super();
@@ -22,11 +19,6 @@ export default class UnityPlayerManagerAdapter
     this.on("load", () => {
       this._send("initRandomAnimationsProcess");
     });
-
-  }
-
-  setPlayerReference(player: UnityPlayerInstance): void {
-    this.player = player;
   }
 
   // @param method qual método o player deve executar (UnityPlayer)

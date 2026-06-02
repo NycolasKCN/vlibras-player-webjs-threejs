@@ -4,3 +4,4 @@ export const dictionaryUrl =
   "https://dicionario2-dth.vlibras.gov.br/2018.3.1/WEBGL/";
 export const dictionaryStaticUrl =
   "https://dicionario2-dth.vlibras.gov.br/static/BUNDLES/2018.3.1/WEBGL/";
+export const baseModelUrl = "http://localhost:8000/resources/model/base-model.glb";

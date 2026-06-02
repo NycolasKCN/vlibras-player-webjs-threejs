@@ -1,9 +1,9 @@
 import { EventEmitter } from "events";
 import { toBoolean } from "./utils";
 
-export interface PlayerManagerAdapter extends EventEmitter {
+export interface PlayerManagerAdapter<T> extends EventEmitter {
   currentBaseUrl: string;
-  setPlayerReference(player: UnityPlayerInstance): void;
+  setPlayerReference(player: T): void;
   applyEmotion(action: string, intensity: number | string): void;
   play(glosa?: string): void;
   pause(): void;
@@ -16,12 +16,20 @@ export interface PlayerManagerAdapter extends EventEmitter {
   setBaseUrl(url: string): void;
 }
 
-export abstract class AbstractPlayerManagerAdapter
+export abstract class AbstractPlayerManagerAdapter<T>
   extends EventEmitter
-  implements PlayerManagerAdapter {
+  implements PlayerManagerAdapter<T>
+{
+  protected player: T | null;
+
   protected constructor() {
     super();
     this.registerUnityCallbacks();
+    this.player = null;
+  }
+
+  setPlayerReference(player: T): void {
+    this.player = player;
   }
 
   private registerUnityCallbacks(): void {
@@ -62,7 +70,6 @@ export abstract class AbstractPlayerManagerAdapter
   }
 
   abstract currentBaseUrl: string;
-  abstract setPlayerReference(player: UnityPlayerInstance): void;
   abstract applyEmotion(action: string, intensity: number | string): void;
   abstract play(glosa?: string): void;
   abstract pause(): void;
