@@ -8,26 +8,32 @@ module.exports = {
   output: {
     filename: "vlibras.js",
     path: path.resolve("./build"),
-    clean: true
+    clean: true,
+    library: {
+      name: "VLibras",
+      type: "umd",
+      export: "default",
+    },
+    globalObject: "this",
   },
   resolve: {
     extensions: [".ts", ".js"],
     fallback: {
-      events: require.resolve("events/")
-    }
+      events: require.resolve("events/"),
+    },
   },
   module: {
     rules: [
       {
         test: /\.ts$/,
         use: "ts-loader",
-        exclude: /node_modules/
-      }
-    ]
+        exclude: /node_modules/,
+      },
+    ],
   },
   plugins: [
     new CopyWebpackPlugin({
-      patterns: [{ from: "src/target", to: "target" }]
-    })
-  ]
+      patterns: [{ from: "src/target", to: "target" }],
+    }),
+  ],
 };
