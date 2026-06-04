@@ -1,5 +1,4 @@
 import { EventEmitter } from "events";
-import { toBoolean } from "./utils";
 
 export interface PlayerManagerAdapter<T> extends EventEmitter {
   currentBaseUrl: string;
@@ -21,10 +20,10 @@ export abstract class AbstractPlayerManagerAdapter<T>
   implements PlayerManagerAdapter<T>
 {
   protected player: T | null;
+  abstract currentBaseUrl: string;
 
   protected constructor() {
     super();
-    this.registerUnityCallbacks();
     this.player = null;
   }
 
@@ -32,44 +31,6 @@ export abstract class AbstractPlayerManagerAdapter<T>
     this.player = player;
   }
 
-  private registerUnityCallbacks(): void {
-    window.onLoadPlayer = (): void => {
-      this.emit("load");
-    };
-
-    window.updateProgress = (progress: number): void => {
-      this.emit("progress", progress);
-    };
-
-    window.onPlayingStateChange = (
-      isPlaying: unknown,
-      isPaused: unknown,
-      _isPlayingIntervalAnimation: unknown,
-      isLoading: unknown,
-      _isRepeatable: unknown,
-    ): void => {
-      this.emit(
-        "stateChange",
-        toBoolean(isPlaying),
-        toBoolean(isPaused),
-        toBoolean(isLoading),
-      );
-    };
-
-    window.CounterGloss = (counter: number, glosaLength: string): void => {
-      this.emit("CounterGloss", counter, glosaLength);
-    };
-
-    window.GetAvatar = (avatar: string): void => {
-      this.emit("GetAvatar", avatar);
-    };
-
-    window.FinishWelcome = (value: boolean): void => {
-      this.emit("FinishWelcome", value);
-    };
-  }
-
-  abstract currentBaseUrl: string;
   abstract applyEmotion(action: string, intensity: number | string): void;
   abstract play(glosa?: string): void;
   abstract pause(): void;

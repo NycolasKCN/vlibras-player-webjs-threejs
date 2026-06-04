@@ -19,8 +19,6 @@ import { createVLibrasExperience } from "./experience/create-vlibras-experience"
 
 let globalGlosaLenght = "";
 
-const CANVAS_ID = "#canvas";
-
 export default class Player extends EventEmitter {
   options: NormalizedPlayerOptions;
   playerManager: PlayerManagerAdapter<VLibrasExperience>;
@@ -39,7 +37,7 @@ export default class Player extends EventEmitter {
 
   constructor(options: PlayerOptions = {}) {
     super();
-    console.log("WebJS Constructor options: ", options);
+    console.debug("[Player] WebJS Constructor options: ", options);
     this.options = assign(
       {
         translator: config.translatorUrl,
@@ -62,53 +60,7 @@ export default class Player extends EventEmitter {
     this.status = STATUSES.idle;
     this.region = "BR";
 
-    this.playerManager.on("load", () => {
-      this.loaded = true;
-      this.emit("load");
-
-      this.playerManager.setBaseUrl(config.dictionaryUrl);
-
-      if (this.options.onLoad) {
-        this.options.onLoad();
-      } else {
-        this.play(null, { fromTranslation: true });
-      }
-    });
-
-    this.playerManager.on("progress", (progress: number) => {
-      this.emit("animation:progress", progress);
-    });
-
-    this.playerManager.on(
-      "stateChange",
-      (isPlaying: boolean, isPaused: boolean, isLoading: boolean) => {
-        if (isPaused) {
-          this.emit("animation:pause");
-        } else if (isPlaying && !isPaused) {
-          this.emit("animation:play");
-          this.changeStatus(STATUSES.playing);
-        } else if (!isPlaying && !isLoading) {
-          this.emit("animation:end");
-          this.changeStatus(STATUSES.idle);
-        }
-      },
-    );
-
-    this.playerManager.on(
-      "CounterGloss",
-      (counter: number, glosaLenght: string) => {
-        this.emit("response:glosa", counter, glosaLenght);
-        globalGlosaLenght = glosaLenght;
-      },
-    );
-
-    this.playerManager.on("GetAvatar", (avatar: string) => {
-      this.emit("GetAvatar", avatar);
-    });
-
-    this.playerManager.on("FinishWelcome", (bool: boolean) => {
-      this.emit("stop:welcome", bool);
-    });
+    this.registerPlayerManagerEvents();
   }
 
   translate(
@@ -207,56 +159,20 @@ export default class Player extends EventEmitter {
   }
 
   load(wrapper: HTMLElement): void {
-    this.gameContainer = document.createElement("div");
-    this.gameContainer.setAttribute("id", "gameContainer");
-    this.gameContainer.classList.add("emscripten");
-    assign(this.gameContainer.style, {
-      margin: "0px",
-      padding: "0px",
-      border: "0px",
-      position: "relative",
-      background: "rgb(255, 255, 255)",
-    });
-
-    this.gameCanvas = document.createElement("canvas");
-    this.gameCanvas.setAttribute("id", CANVAS_ID);
-    assign(this.gameCanvas.style, {
-      cursor: "default",
-      minHeight: "calc(0.7 * 450px)",
-      minWidth: "calc(0.9 * 300)",
-      width: "100%",
-      height: "100%",
-      aspectRatio: "auto",
-    });
-    this.gameContainer.appendChild(this.gameCanvas);
-
     if (typeof this.options.progress === "function") {
       this.progress = new this.options.progress(wrapper);
     }
-
-    wrapper.appendChild(this.gameContainer);
-
-    this._initialize();
-  }
-
-  private async _initialize(): Promise<void> {
     if (!WebGL.isWebGL2Available()) {
       this.onError("unsupported");
       alert("Seu navegador não suporta WEBGL");
       console.error("Seu navegador não suporta WEBGL");
       return;
     }
-    if (!this.gameCanvas) {
-      this.onError("canvas not initialized");
-      alert("Player não foi inicializado corretamente.");
-      console.error("Player não foi inicializado corretamente.");
-      return;
-    }
-    this.player = createVLibrasExperience(this.gameCanvas, config.baseModelUrl);
+
+    this.player = createVLibrasExperience(wrapper, config.baseModelUrl);
     this.playerManager.setPlayerReference(this.player);
-    await this.player.init();
-    this.player.start();
-    this.player.cycleAnimations();
+
+    this.player.init();
   }
 
   private changeStatus(status: PlayerStatus): void {
@@ -279,5 +195,58 @@ export default class Player extends EventEmitter {
         }
         break;
     }
+  }
+
+  private registerPlayerManagerEvents(): void {
+    this.playerManager.on("load", () => {
+      console.debug("[Player] playerManager onLoad");
+      this.loaded = true;
+      this.emit("load");
+
+      this.playerManager.setBaseUrl(config.dictionaryUrl);
+
+      if (this.options.onLoad) {
+        this.options.onLoad();
+      } else {
+        this.play(null, { fromTranslation: true });
+      }
+
+      console.debug("[Player] playerManager onLoad");
+    });
+
+    this.playerManager.on("progress", (progress: number) => {
+      this.emit("animation:progress", progress);
+    });
+
+    this.playerManager.on(
+      "stateChange",
+      (isPlaying: boolean, isPaused: boolean, isLoading: boolean) => {
+        if (isPaused) {
+          this.emit("animation:pause");
+        } else if (isPlaying && !isPaused) {
+          this.emit("animation:play");
+          this.changeStatus(STATUSES.playing);
+        } else if (!isPlaying && !isLoading) {
+          this.emit("animation:end");
+          this.changeStatus(STATUSES.idle);
+        }
+      },
+    );
+
+    this.playerManager.on(
+      "CounterGloss",
+      (counter: number, glosaLenght: string) => {
+        this.emit("response:glosa", counter, glosaLenght);
+        globalGlosaLenght = glosaLenght;
+      },
+    );
+
+    this.playerManager.on("GetAvatar", (avatar: string) => {
+      this.emit("GetAvatar", avatar);
+    });
+
+    this.playerManager.on("FinishWelcome", (bool: boolean) => {
+      this.emit("stop:welcome", bool);
+    });
   }
 }

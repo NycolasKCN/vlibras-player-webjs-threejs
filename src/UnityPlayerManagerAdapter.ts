@@ -1,5 +1,5 @@
 import { AbstractPlayerManagerAdapter } from "./PlayerManagerAdapter";
-import { toInt } from "./utils";
+import { toBoolean, toInt } from "./utils";
 
 type UnityMessageParam = string | number | undefined;
 
@@ -15,6 +15,7 @@ export default class UnityPlayerManagerAdapter extends AbstractPlayerManagerAdap
     super();
     this.subtitle = true;
     this.currentBaseUrl = "";
+    this.registerUnityCallbacks();
 
     this.on("load", () => {
       this._send("initRandomAnimationsProcess");
@@ -77,5 +78,42 @@ export default class UnityPlayerManagerAdapter extends AbstractPlayerManagerAdap
   setBaseUrl(url: string): void {
     this._send("setBaseUrl", url);
     this.currentBaseUrl = url;
+  }
+
+  private registerUnityCallbacks(): void {
+    window.onLoadPlayer = (): void => {
+      this.emit("load");
+    };
+
+    window.updateProgress = (progress: number): void => {
+      this.emit("progress", progress);
+    };
+
+    window.onPlayingStateChange = (
+      isPlaying: unknown,
+      isPaused: unknown,
+      _isPlayingIntervalAnimation: unknown,
+      isLoading: unknown,
+      _isRepeatable: unknown,
+    ): void => {
+      this.emit(
+        "stateChange",
+        toBoolean(isPlaying),
+        toBoolean(isPaused),
+        toBoolean(isLoading),
+      );
+    };
+
+    window.CounterGloss = (counter: number, glosaLength: string): void => {
+      this.emit("CounterGloss", counter, glosaLength);
+    };
+
+    window.GetAvatar = (avatar: string): void => {
+      this.emit("GetAvatar", avatar);
+    };
+
+    window.FinishWelcome = (value: boolean): void => {
+      this.emit("FinishWelcome", value);
+    };
   }
 }

@@ -14,9 +14,14 @@ export interface PlayerOptions {
   onLoad?: () => void;
   progress?: ProgressConstructor;
   personalization?: unknown;
-  wrapper?: unknown;
+  wrapper?: HTMLDivElement;
   [key: string]: unknown;
 }
+
+export type NormalizedPlayerOptions = PlayerOptions & {
+  translator: string;
+  targetPath: string;
+};
 
 export interface PlayOptions {
   fromTranslation?: boolean;
@@ -27,7 +32,3 @@ export interface TranslateOptions {
   isEnabledStats?: boolean;
 }
 
-export type NormalizedPlayerOptions = PlayerOptions & {
-  translator: string;
-  targetPath: string;
-};

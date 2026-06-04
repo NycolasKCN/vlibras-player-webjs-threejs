@@ -11,7 +11,7 @@ import { ThreeSceneBootstrapper } from "./scene-bootstrapper";
 import { GltfAnimationLoader } from "./animation-loader";
 
 export function createVLibrasExperience(
-  canvas: HTMLCanvasElement,
+  wrapper: HTMLElement,
   baseModelUrl: string = "/resources/model/base-model.glb",
 ): VLibrasExperience {
   const dependencies: VLibrasExperienceDependencies = {
@@ -24,6 +24,5 @@ export function createVLibrasExperience(
     sceneDebugger: new ObjectTreeSceneDebugger(),
     modelPath: baseModelUrl,
   };
-  console.log("Resouce created");
-  return new VLibrasExperience(canvas, dependencies);
+  return new VLibrasExperience(wrapper, dependencies);
 }

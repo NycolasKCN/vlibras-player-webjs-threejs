@@ -9,47 +9,62 @@ export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdap
     super();
     this.subtitle = true;
     this.currentBaseUrl = "";
+  }
 
-    this.on("load", () => {});
+  setPlayerReference(player: VLibrasExperience): void {
+    this.player = player;
+    this.registerExperienceEvents();
   }
 
   applyEmotion(action: string, intensity: number | string): void {
-    throw new Error("Method not implemented.");
+    console.log("applyEmotion: ", action, intensity);
   }
 
   play(glosa?: string): void {
-    throw new Error("Method not implemented.");
+    console.log("play: ", glosa);
   }
 
   pause(): void {
-    throw new Error("Method not implemented.");
+    console.log("pause");
   }
 
   stop(): void {
-    throw new Error("Method not implemented.");
+    console.log("stop");
   }
 
   setSpeed(speed: number): void {
-    throw new Error("Method not implemented.");
+    console.log("setSpeed: ", speed);
   }
 
   toggleSubtitle(): void {
-    throw new Error("Method not implemented.");
+    console.log("toggleSubtitle");
   }
 
   setPersonalization(personalization: string): void {
-    throw new Error("Method not implemented.");
+    console.log("setPersonalization: ", personalization);
   }
 
   playWellcome(): void {
-    throw new Error("Method not implemented.");
+    console.log("playWellcome");
   }
 
   changeAvatar(avatarName: string): void {
-    throw new Error("Method not implemented.");
+    console.log("changeAvatar: ", avatarName);
   }
 
   setBaseUrl(url: string): void {
-    throw new Error("Method not implemented.");
+    console.log("setBaseUrl: ", url);
+  }
+
+  private registerExperienceEvents(): void {
+    if (!this.player) {
+      console.error("Player is not assigned.");
+      return;
+    }
+
+    this.player.on("load", () => {
+      this.emit("load");
+      this.player!.start();
+    });
   }
 }

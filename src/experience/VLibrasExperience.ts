@@ -1,13 +1,17 @@
-import * as Three from 'three';
-import { Experience } from './Experience';
-import { AnimationController, MixerAnimationController } from './animation-controller';
-import { AvatarLoader } from './avatar-loader';
-import { EnvironmentBuilder } from './environment-builder';
-import { RenderLoop } from './render-loop';
-import { SceneDebugger } from './scene-debugger';
-import { SceneBootstrapper } from './scene-bootstrapper';
-import { SceneRuntime } from './types';
-import { AnimationLoader } from './animation-loader';
+import * as Three from "three";
+import { Experience } from "./Experience";
+import {
+  AnimationController,
+  MixerAnimationController,
+} from "./animation-controller";
+import { AvatarLoader } from "./avatar-loader";
+import { EnvironmentBuilder } from "./environment-builder";
+import { RenderLoop } from "./render-loop";
+import { SceneDebugger } from "./scene-debugger";
+import { SceneBootstrapper } from "./scene-bootstrapper";
+import { SceneRuntime } from "./types";
+import { AnimationLoader } from "./animation-loader";
+import EventEmitter from "events";
 
 export interface VLibrasExperienceDependencies {
   sceneBootstrapper: SceneBootstrapper;
@@ -20,25 +24,31 @@ export interface VLibrasExperienceDependencies {
   modelPath: string;
 }
 
-export class VLibrasExperience implements Experience {
+export class VLibrasExperience extends EventEmitter implements Experience {
   private readonly runtime: SceneRuntime;
   private readonly timer = new Three.Timer();
   private readonly dependencies: VLibrasExperienceDependencies;
 
-  constructor(canvas: HTMLCanvasElement, dependencies: VLibrasExperienceDependencies) {
+  constructor(
+    wrapper: HTMLElement,
+    dependencies: VLibrasExperienceDependencies,
+  ) {
+    super();
     this.dependencies = dependencies;
-    this.runtime = dependencies.sceneBootstrapper.bootstrap(canvas);
+    this.runtime = dependencies.sceneBootstrapper.bootstrap(wrapper);
   }
 
   public async init(): Promise<void> {
+    console.debug("[Experience] init");
     this.dependencies.environmentBuilder.build(this.runtime);
-    const avatar = await this.dependencies.avatarLoader.load(this.dependencies.modelPath);
-    const animations = await this.dependencies.animationLoader.load(
-      '/animations/glb/animations.glb'
+    const avatar = await this.dependencies.avatarLoader.load(
+      this.dependencies.modelPath,
     );
-    avatar.object.position.y = 2;
     this.runtime.scene.add(avatar.object);
-    this.dependencies.animationController.bind(avatar.object, animations.clips);
+    this.dependencies.animationController.bind(avatar.object, []);
+
+    this.emit("load");
+    console.debug("[Experience] load emited");
   }
 
   public start(): void {
@@ -54,18 +64,6 @@ export class VLibrasExperience implements Experience {
         this.dependencies.animationController as MixerAnimationController
       ).listAnimations(),
     };
-  }
-
-  public cycleAnimations(): void {
-    this.dependencies.animationController.cycleAnimations();
-  }
-
-  public playAnimation(index: number): void {
-    this.dependencies.animationController.playAnimation(index);
-  }
-
-  public listAnimations(): string[] {
-    return this.dependencies.animationController.listAnimations();
   }
 
   private updateObjects = (): void => {
