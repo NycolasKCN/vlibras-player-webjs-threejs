@@ -22,17 +22,6 @@ export default class UnityPlayerManagerAdapter extends AbstractPlayerManagerAdap
     });
   }
 
-  // @param method qual método o player deve executar (UnityPlayer)
-  // - playNow
-  // - setPauseState
-  // - setUrl
-  // - stopAll
-  // - setSlider
-  // - setSubtitlesState
-  // - playWellcome
-  // - Change
-  // @param params
-  // - glosa?
   private _send(method: string, params?: UnityMessageParam): void {
     this.player!.SendMessage(GAME_OBJECT, method, params);
   }
@@ -87,6 +76,7 @@ export default class UnityPlayerManagerAdapter extends AbstractPlayerManagerAdap
 
     window.updateProgress = (progress: number): void => {
       this.emit("progress", progress);
+      console.debug("[Player] progress: ", {progress});
     };
 
     window.onPlayingStateChange = (
@@ -106,10 +96,12 @@ export default class UnityPlayerManagerAdapter extends AbstractPlayerManagerAdap
 
     window.CounterGloss = (counter: number, glosaLength: string): void => {
       this.emit("CounterGloss", counter, glosaLength);
+      console.debug("[Player] counterGloss: ", {counter, glosaLength});
     };
 
     window.GetAvatar = (avatar: string): void => {
       this.emit("GetAvatar", avatar);
+      console.debug("[Player] GetAvatar: ", {avatar});
     };
 
     window.FinishWelcome = (value: boolean): void => {

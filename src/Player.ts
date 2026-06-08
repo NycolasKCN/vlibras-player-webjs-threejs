@@ -29,6 +29,7 @@ export default class Player extends EventEmitter {
   translated: boolean;
   text?: string;
   gloss?: string;
+  glosaLen: number = 0;
   loaded: boolean;
   progress: unknown | null;
   status: PlayerStatus;
@@ -176,11 +177,12 @@ export default class Player extends EventEmitter {
   }
 
   private changeStatus(status: PlayerStatus): void {
+    console.debug("[Player] changeStatus to ", status)
     switch (status) {
       case STATUSES.idle:
         if (this.status === STATUSES.playing) {
           this.status = status;
-          this.emit("gloss:end", globalGlosaLenght);
+          this.emit("gloss:end", this.glosaLen);
         }
         break;
 
@@ -215,18 +217,24 @@ export default class Player extends EventEmitter {
     });
 
     this.playerManager.on("progress", (progress: number) => {
+      console.debug("[Player] playerManager progress", { progress });
       this.emit("animation:progress", progress);
     });
 
     this.playerManager.on(
-      "stateChange",
-      (isPlaying: boolean, isPaused: boolean, isLoading: boolean) => {
-        if (isPaused) {
+      "state:change",
+      (state: {
+        isPlaying: boolean;
+        isPaused: boolean;
+        isLoading: boolean;
+      }) => {
+        console.debug("[Player] playerManager state:change", { state });
+        if (state.isPaused) {
           this.emit("animation:pause");
-        } else if (isPlaying && !isPaused) {
+        } else if (state.isPlaying && !state.isPaused) {
           this.emit("animation:play");
           this.changeStatus(STATUSES.playing);
-        } else if (!isPlaying && !isLoading) {
+        } else if (!state.isPlaying && !state.isLoading) {
           this.emit("animation:end");
           this.changeStatus(STATUSES.idle);
         }
@@ -234,14 +242,16 @@ export default class Player extends EventEmitter {
     );
 
     this.playerManager.on(
-      "CounterGloss",
-      (counter: number, glosaLenght: string) => {
-        this.emit("response:glosa", counter, glosaLenght);
-        globalGlosaLenght = glosaLenght;
+      "state:progress",
+      (state: { progress: number; total: number }) => {
+        console.debug("[Player] playerManager state:progress", { state });
+        this.glosaLen = state.total;
+        this.emit("response:glosa", state.progress, state.total);
       },
     );
 
     this.playerManager.on("GetAvatar", (avatar: string) => {
+      console.debug("[Player] playerManager getAvatar", { avatar });
       this.emit("GetAvatar", avatar);
     });
 

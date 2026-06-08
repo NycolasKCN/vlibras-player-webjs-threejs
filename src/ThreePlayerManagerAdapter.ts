@@ -1,70 +1,91 @@
+import { AnimationController } from "./experience/animation-controller";
 import { VLibrasExperience } from "./experience/VLibrasExperience";
 import { AbstractPlayerManagerAdapter } from "./PlayerManagerAdapter";
 
 export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdapter<VLibrasExperience> {
   subtitle: boolean;
   currentBaseUrl: string;
+  animationController: AnimationController | null;
 
   constructor() {
     super();
     this.subtitle = true;
     this.currentBaseUrl = "";
+    this.animationController = null;
   }
 
   setPlayerReference(player: VLibrasExperience): void {
     this.player = player;
+    this.animationController = this.player.getAnimationController();
     this.registerExperienceEvents();
   }
 
   applyEmotion(action: string, intensity: number | string): void {
-    console.log("applyEmotion: ", action, intensity);
+    console.debug("[PlayerManager] applyEmotion: ", action, intensity);
   }
 
   play(glosa?: string): void {
-    console.log("play: ", glosa);
+    console.debug("[PlayerManager] play: ", glosa);
+    this.animationController?.playGlosa(glosa);
   }
 
   pause(): void {
-    console.log("pause");
+    console.debug("[PlayerManager] pause");
+    this.animationController?.pause();
   }
 
   stop(): void {
-    console.log("stop");
+    console.debug("[PlayerManager] stop");
+    this.animationController?.stop();
   }
 
   setSpeed(speed: number): void {
-    console.log("setSpeed: ", speed);
+    console.debug("[PlayerManager] setSpeed: ", speed);
+    this.animationController?.setSpeed(speed);
   }
 
   toggleSubtitle(): void {
-    console.log("toggleSubtitle");
+    console.debug("[PlayerManager] toggleSubtitle");
   }
 
   setPersonalization(personalization: string): void {
-    console.log("setPersonalization: ", personalization);
+    console.debug("[PlayerManager] setPersonalization: ", personalization);
   }
 
   playWellcome(): void {
-    console.log("playWellcome");
+    console.debug("[PlayerManager] playWellcome");
   }
 
   changeAvatar(avatarName: string): void {
-    console.log("changeAvatar: ", avatarName);
+    console.debug("[PlayerManager] changeAvatar: ", avatarName);
   }
 
   setBaseUrl(url: string): void {
-    console.log("setBaseUrl: ", url);
+    console.debug("[PlayerManager] setBaseUrl: ", url);
   }
 
   private registerExperienceEvents(): void {
-    if (!this.player) {
-      console.error("Player is not assigned.");
-      return;
-    }
-
-    this.player.on("load", () => {
+    this.player!.on("load", () => {
       this.emit("load");
       this.player!.start();
     });
+
+    this.animationController!.on(
+      "state:change",
+      (state: {
+        isPlaying: boolean;
+        isPaused: boolean;
+        isLoading: boolean;
+      }) => {
+        this.emit("state:change", state);
+      },
+    );
+
+    this.animationController!.on(
+      "state:progress",
+      (state: { progress: number; total: number }) => {
+        this.emit("state:progress", state);
+      },
+    );
   }
 }

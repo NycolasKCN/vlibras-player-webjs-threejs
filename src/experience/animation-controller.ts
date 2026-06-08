@@ -1,11 +1,15 @@
-import * as Three from 'three';
+import { EventEmitter } from "events";
+import * as Three from "three";
+import { AnimationLoader, GltfAnimationLoader } from "./animation-loader";
 
-export interface AnimationController {
+export interface AnimationController extends EventEmitter {
   bind(object: Three.Object3D, clips: Three.AnimationClip[]): void;
-  cycleAnimations(): void;
   update(delta: number): void;
-  playAnimation(index: number): void;
+  pause(): void;
+  stop(): void;
+  setSpeed(speed: number): void;
   listAnimations(): string[];
+  playGlosa(glosa?: string): void;
 }
 
 interface ActiveAnimation {
@@ -13,34 +17,62 @@ interface ActiveAnimation {
   action: Three.AnimationAction;
 }
 
-export class MixerAnimationController implements AnimationController {
+export class MixerAnimationController
+  extends EventEmitter
+  implements AnimationController
+{
   private mixer?: Three.AnimationMixer;
   private clips: Three.AnimationClip[] = [];
   private currentAnimation?: ActiveAnimation;
-  private isAnimationCycleEnabled?: boolean = false;
+  private animationLoader: AnimationLoader = new GltfAnimationLoader();
+  private _speed: number = 1;
 
-  public bind(object: Three.Object3D, clips: Three.AnimationClip[]): void {
-    this.clips = clips;
+  public bind(object: Three.Object3D): void {
     this.currentAnimation = undefined;
     this.mixer = new Three.AnimationMixer(object);
-    this.mixer.addEventListener('finished', this.handleAnimationFinished);
+    this.mixer.addEventListener("finished", () => {
+      this.play();
+    });
   }
 
-  public cycleAnimations(): void {
-    if (!this.mixer || this.clips.length === 0) {
+  async playGlosa(glosa?: string): Promise<void> {
+    // if (this.isPlaying) {
+    //   this.stop();
+    // }
+    if (glosa) {
+      this.isLoading = true;
+      await this.loadAnimationClips(glosa);
+      this.isLoading = false;
+    }
+
+    this.play();
+  }
+
+  public pause(): void {
+    if (!this.mixer) {
       return;
     }
+    this.mixer.timeScale = 0;
+    this.isPaused = true;
+  }
 
-    this.isAnimationCycleEnabled = true;
-    let nextAnimationIndex = 0;
+  public stop(): void {
     if (this.currentAnimation) {
-      nextAnimationIndex = this.currentAnimation.index + 1;
+      this.currentAnimation.action.stop();
     }
-    if (nextAnimationIndex >= this.clips.length) {
-      nextAnimationIndex = 0;
-    }
+    this.finishedCleanup();
+  }
 
-    this.playAnimation(nextAnimationIndex);
+  public setSpeed(speed: number): void {
+    if (!this.mixer || speed > 2.5 || speed < 0.5) {
+      return;
+    }
+    this._speed = speed;
+
+    if (!this.isPaused) {
+      console.debug("[Animation] setting mixer timeScale", speed);
+      this.mixer.timeScale = speed;
+    }
   }
 
   public update(delta: number): void {
@@ -54,32 +86,132 @@ export class MixerAnimationController implements AnimationController {
     return this.clips.map((clip) => clip.name);
   }
 
-  public playAnimation(index: number): void {
+  private async loadAnimationClips(glosa: string) {
+    const words: string[] = glosa
+      .split(" ")
+      .filter((word) => {
+        return !(word.startsWith("[") && word.endsWith("]"));
+      })
+      .map((word) => {
+        return word.trim().replace(/\u200E/g, "");
+      });
+
+    const loadedClips = await this.animationLoader.load(words);
+    this.clips = loadedClips.clips;
+  }
+
+  private play(): void {
+    if (!this.mixer || this.clips.length === 0) {
+      return;
+    }
+
+    if (this.isPaused) {
+      this.resume();
+      return;
+    }
+
+    let nextAnimationIndex = 0;
+    if (this.currentAnimation) {
+      nextAnimationIndex = this.currentAnimation.index + 1;
+    }
+
+    if (nextAnimationIndex >= this.clips.length) {
+      this.finishedCleanup();
+      return;
+    }
+
+    this.playAnimation(nextAnimationIndex);
+  }
+
+  private resume() {
+    if (!this.mixer) return;
+
+    this.mixer.timeScale = this._speed;
+    this.isPaused = false;
+  }
+
+  private playAnimation(index: number): void {
     if (!this.mixer || this.clips.length === 0) {
       return;
     }
 
     const clip = this.clips[index];
     const action = this.mixer.clipAction(clip);
-
     action.reset();
+
+    if (this.currentAnimation) {
+      action.crossFadeFrom(this.currentAnimation.action, 0.2, true);
+    }
+
     action.setLoop(Three.LoopOnce, 1);
     action.clampWhenFinished = true;
 
-    if (this.currentAnimation) {
-      action.crossFadeFrom(this.currentAnimation.action, 0.25, true);
-    }
-
+    console.debug("[Animation] Playing animation: ", clip.name);
+    this.isPlaying = true;
     action.play();
-    this.currentAnimation = {
-      index,
-      action,
-    };
+    this.currentAnimation = { index, action };
+    this.emitProgress();
   }
 
-  private readonly handleAnimationFinished = (): void => {
-    if (this.isAnimationCycleEnabled) {
-      this.cycleAnimations();
+  private finishedCleanup(): void {
+    console.debug("[Animation] animation finished");
+    this.currentAnimation = undefined;
+    this.mixer?.stopAllAction();
+    this.clips.forEach((clip) => {
+      this.mixer?.uncacheAction(clip);
+    });
+    this.isPlaying = false;
+  }
+
+  private emitProgress(): void {
+    const progress = this.currentAnimation
+      ? this.currentAnimation.index + 1
+      : 0;
+    this.emit("state:progress", { progress, total: this.clips.length });
+  }
+
+  private _isPaused: boolean = false;
+  private _isPlaying: boolean = false;
+  private _isLoading: boolean = false;
+  private get isPaused(): boolean {
+    return this._isPaused;
+  }
+  private set isPaused(value: boolean) {
+    if (this._isPaused !== value) {
+      this._isPaused = value;
+      this.emit("state:change", {
+        isPlaying: this.isPlaying,
+        isPaused: this.isPaused,
+        isLoading: this.isLoading,
+      });
     }
-  };
+  }
+
+  private get isPlaying(): boolean {
+    return this._isPlaying;
+  }
+  private set isPlaying(value: boolean) {
+    if (this._isPlaying !== value) {
+      this._isPlaying = value;
+      this.emit("state:change", {
+        isPlaying: this.isPlaying,
+        isPaused: this.isPaused,
+        isLoading: this.isLoading,
+      });
+    }
+  }
+
+  private get isLoading(): boolean {
+    return this._isLoading;
+  }
+  private set isLoading(value: boolean) {
+    if (this._isLoading !== value) {
+      this._isLoading = value;
+      this.emit("state:change", {
+        isPlaying: this.isPlaying,
+        isPaused: this.isPaused,
+        isLoading: this.isLoading,
+      });
+    }
+  }
 }

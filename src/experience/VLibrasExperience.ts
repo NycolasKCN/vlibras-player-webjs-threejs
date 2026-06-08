@@ -26,7 +26,6 @@ export interface VLibrasExperienceDependencies {
 
 export class VLibrasExperience extends EventEmitter implements Experience {
   private readonly runtime: SceneRuntime;
-  private readonly timer = new Three.Timer();
   private readonly dependencies: VLibrasExperienceDependencies;
 
   constructor(
@@ -47,13 +46,12 @@ export class VLibrasExperience extends EventEmitter implements Experience {
     this.runtime.scene.add(avatar.object);
     this.dependencies.animationController.bind(avatar.object, []);
 
+    this.dependencies.renderLoop.start(this.runtime, this.updateObjects);
     this.emit("load");
-    console.debug("[Experience] load emited");
+    console.debug("[Experience] Loaded and started");
   }
 
-  public start(): void {
-    this.dependencies.renderLoop.start(this.runtime, this.updateObjects);
-  }
+  public start(): void {}
 
   public debug(): { sceneTree: string[]; animations: string[] } {
     this.dependencies.sceneDebugger.debug(this.runtime.scene);
@@ -66,8 +64,13 @@ export class VLibrasExperience extends EventEmitter implements Experience {
     };
   }
 
-  private updateObjects = (): void => {
-    this.timer.update();
-    this.dependencies.animationController.update(this.timer.getDelta());
+  public getAnimationController(): AnimationController {
+    return this.dependencies.animationController;
+  }
+
+  private updateObjects = (delta: number): void => {
+    this.dependencies.animationController.update(delta);
   };
+
+  private registerEvents(): void {}
 }

@@ -1,31 +1,42 @@
-import * as Three from 'three';
-import { SceneRuntime } from './types';
+import * as Three from "three";
+import { SceneRuntime } from "./types";
 
 export interface RenderLoop {
-  start(runtime: SceneRuntime, updateSceneObjects: () => void): void;
+  start(
+    runtime: SceneRuntime,
+    updateSceneObjects: (delta: number) => void,
+  ): void;
 }
 
 export class ResponsiveRenderLoop implements RenderLoop {
-  public start(runtime: SceneRuntime, updateSceneObjects: () => void): void {
-    this.renderResponsiveScene(runtime.renderer, runtime.scene, runtime.camera, () => {
-      updateSceneObjects();
-    });
+  public start(
+    runtime: SceneRuntime,
+    updateSceneObjects: (delta: number) => void,
+  ): void {
+    this.renderResponsiveScene(
+      runtime.renderer,
+      runtime.scene,
+      runtime.camera,
+      (delta) => {
+        updateSceneObjects(delta);
+      },
+    );
   }
 
   private renderResponsiveScene(
     renderer: Three.WebGLRenderer,
     scene: Three.Scene,
     camera: Three.PerspectiveCamera,
-    updateSceneObjects: (time: number) => void,
-    timer: number = 0.0001
+    updateSceneObjects: (delta: number) => void,
   ): void {
-    function render(time: number): void {
-      time *= timer;
+    const timer = new Three.Timer();
 
+    function render(): void {
       const canvas = renderer.domElement;
       const clientWidth = canvas.clientWidth;
       const clientHeight = canvas.clientHeight;
-      const isNeedToResizeDisplay = canvas.width !== clientWidth || canvas.height !== clientHeight;
+      const isNeedToResizeDisplay =
+        canvas.width !== clientWidth || canvas.height !== clientHeight;
       if (isNeedToResizeDisplay) {
         // Limits the drawing buffer to the maxPixelCount
         // Now the maxPixelCount is equivalent of an 4K monitor
@@ -36,7 +47,10 @@ export class ResponsiveRenderLoop implements RenderLoop {
         let height = Math.floor(clientHeight * pixelRatio);
 
         const pixelCount = width * height;
-        const renderScale = pixelCount > maxPixelCount ? Math.sqrt(maxPixelCount / pixelCount) : 1;
+        const renderScale =
+          pixelCount > maxPixelCount
+            ? Math.sqrt(maxPixelCount / pixelCount)
+            : 1;
 
         width = Math.floor(width * renderScale);
         height = Math.floor(height * renderScale);
@@ -44,10 +58,10 @@ export class ResponsiveRenderLoop implements RenderLoop {
         renderer.setSize(width, height, false);
         camera.aspect = clientWidth / clientHeight;
         camera.updateProjectionMatrix();
-
       }
 
-      updateSceneObjects(time);
+      timer.update();
+      updateSceneObjects(timer.getDelta());
 
       renderer.render(scene, camera);
       requestAnimationFrame(render);
