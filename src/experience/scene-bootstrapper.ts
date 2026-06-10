@@ -24,11 +24,8 @@ export class ThreeSceneBootstrapper implements SceneBootstrapper {
   constructor(private readonly config: SceneBootstrapConfig = defaultConfig) {}
 
   public bootstrap(wrapper: HTMLElement): SceneRuntime {
-    const canvas = this.bootstrapHtmlElements(wrapper);
-    return this.bootstrapScene(canvas);
-  }
+    const [subtitleContainer, canvas] = this.bootstrapHtmlElements(wrapper);
 
-  private bootstrapScene(canvas: HTMLCanvasElement): SceneRuntime {
     const renderer = new Three.WebGLRenderer({ antialias: true, canvas });
     const scene = new Three.Scene();
     scene.name = "root";
@@ -43,10 +40,12 @@ export class ThreeSceneBootstrapper implements SceneBootstrapper {
     camera.position.set(...this.config.cameraPosition);
     scene.add(camera);
 
-    return { canvas, renderer, scene, camera };
+    return { subtitleContainer, canvas, renderer, scene, camera };
   }
 
-  private bootstrapHtmlElements(wrapper: HTMLElement): HTMLCanvasElement {
+  private bootstrapHtmlElements(
+    wrapper: HTMLElement,
+  ): [HTMLDivElement, HTMLCanvasElement] {
     if (!(wrapper instanceof HTMLDivElement)) {
       throw new Error("Wrapper element is not a div.");
     }
@@ -74,8 +73,19 @@ export class ThreeSceneBootstrapper implements SceneBootstrapper {
     });
     vlContainer.appendChild(vlCanvas);
 
+    const vlSubtitle = document.createElement("div");
+    vlSubtitle.setAttribute("id", "#subtitle");
+    assign(vlSubtitle.style, {
+      position: "absolute",
+      top: "4px",
+      left: "50%",
+      transform: "translateX(-50%)",
+
+    });
+    vlContainer.appendChild(vlSubtitle);
+
     wrapper.appendChild(vlContainer);
 
-    return vlCanvas;
+    return [vlSubtitle, vlCanvas];
   }
 }

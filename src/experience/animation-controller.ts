@@ -1,9 +1,14 @@
 import { EventEmitter } from "events";
 import * as Three from "three";
 import { AnimationLoader, GltfAnimationLoader } from "./animation-loader";
+import { SubtitleController } from "./subtitle-controller";
 
 export interface AnimationController extends EventEmitter {
-  bind(object: Three.Object3D, clips: Three.AnimationClip[]): void;
+  start(
+    object: Three.Object3D,
+    clips: Three.AnimationClip[],
+    subtitleController: SubtitleController,
+  ): void;
   update(delta: number): void;
   pause(): void;
   stop(): void;
@@ -25,9 +30,15 @@ export class MixerAnimationController
   private clips: Three.AnimationClip[] = [];
   private currentAnimation?: ActiveAnimation;
   private animationLoader: AnimationLoader = new GltfAnimationLoader();
+  private subtitleController?: SubtitleController;
   private _speed: number = 1;
 
-  public bind(object: Three.Object3D): void {
+  public start(
+    object: Three.Object3D,
+    clips: Three.AnimationClip[],
+    subtitleController: SubtitleController,
+  ): void {
+    this.subtitleController = subtitleController;
     this.currentAnimation = undefined;
     this.mixer = new Three.AnimationMixer(object);
     this.mixer.addEventListener("finished", () => {
@@ -130,6 +141,8 @@ export class MixerAnimationController
     this.isPaused = false;
   }
 
+  // FIXME: Corrigir problema do crossFading que não tá funcionando pois o fluxo segue:
+  // [clip 1 começa] ──► [clip 1 termina] ──► evento "finished" ──► [clip 2 começa]
   private playAnimation(index: number): void {
     if (!this.mixer || this.clips.length === 0) {
       return;
@@ -138,15 +151,16 @@ export class MixerAnimationController
     const clip = this.clips[index];
     const action = this.mixer.clipAction(clip);
     action.reset();
+    action.weight = 1;
+    action.setLoop(Three.LoopOnce, 1);
+    action.clampWhenFinished = true;
 
     if (this.currentAnimation) {
       action.crossFadeFrom(this.currentAnimation.action, 0.2, true);
     }
 
-    action.setLoop(Three.LoopOnce, 1);
-    action.clampWhenFinished = true;
-
     console.debug("[Animation] Playing animation: ", clip.name);
+    this.subtitleController?.update(clip.name);
     this.isPlaying = true;
     action.play();
     this.currentAnimation = { index, action };
@@ -155,6 +169,7 @@ export class MixerAnimationController
 
   private finishedCleanup(): void {
     console.debug("[Animation] animation finished");
+    this.subtitleController?.clear();
     this.currentAnimation = undefined;
     this.mixer?.stopAllAction();
     this.clips.forEach((clip) => {

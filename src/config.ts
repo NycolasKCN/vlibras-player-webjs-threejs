@@ -1,5 +1,5 @@
 export const translatorUrl =
-  "https://traducao2-dth.vlibras.gov.br/dl/translate";
+  "https://traducao2-dth.vlibras.gov.br/translate";
 export const dictionaryUrl =
   "https://dicionario2-dth.vlibras.gov.br/2018.3.1/WEBGL/";
 export const dictionaryStaticUrl =

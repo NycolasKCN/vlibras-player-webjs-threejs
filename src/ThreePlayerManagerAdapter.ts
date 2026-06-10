@@ -1,4 +1,5 @@
 import { AnimationController } from "./experience/animation-controller";
+import { SubtitleController } from "./experience/subtitle-controller";
 import { VLibrasExperience } from "./experience/VLibrasExperience";
 import { AbstractPlayerManagerAdapter } from "./PlayerManagerAdapter";
 
@@ -6,17 +7,20 @@ export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdap
   subtitle: boolean;
   currentBaseUrl: string;
   animationController: AnimationController | null;
+  subtitleController: SubtitleController | null;
 
   constructor() {
     super();
     this.subtitle = true;
     this.currentBaseUrl = "";
     this.animationController = null;
+    this.subtitleController = null;
   }
 
   setPlayerReference(player: VLibrasExperience): void {
     this.player = player;
     this.animationController = this.player.getAnimationController();
+    this.subtitleController = this.player.getSubtitleController();
     this.registerExperienceEvents();
   }
 
@@ -46,6 +50,7 @@ export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdap
 
   toggleSubtitle(): void {
     console.debug("[PlayerManager] toggleSubtitle");
+    this.subtitleController?.toggleSubtitle();
   }
 
   setPersonalization(personalization: string): void {

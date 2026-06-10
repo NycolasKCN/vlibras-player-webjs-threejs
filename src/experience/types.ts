@@ -1,6 +1,7 @@
 import * as Three from 'three';
 
 export interface SceneRuntime {
+  subtitleContainer: HTMLDivElement;
   canvas: HTMLCanvasElement;
   renderer: Three.WebGLRenderer;
   scene: Three.Scene;

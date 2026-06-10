@@ -1,14 +1,10 @@
-import {
-  VLibrasExperience,
-  VLibrasExperienceDependencies,
-} from "./VLibrasExperience";
-import { GltfAvatarLoader } from "./avatar-loader";
-import { MixerAnimationController } from "./animation-controller";
-import { ThreeEnvironmentBuilder } from "./environment-builder";
-import { ResponsiveRenderLoop } from "./render-loop";
-import { ObjectTreeSceneDebugger } from "./scene-debugger";
-import { ThreeSceneBootstrapper } from "./scene-bootstrapper";
-import { GltfAnimationLoader } from "./animation-loader";
+import {VLibrasExperience, VLibrasExperienceDependencies,} from "./VLibrasExperience";
+import {MixerAnimationController} from "./animation-controller";
+import {ThreeEnvironmentBuilder} from "./environment-builder";
+import {ResponsiveRenderLoop} from "./render-loop";
+import {ObjectTreeSceneDebugger} from "./scene-debugger";
+import {ThreeSceneBootstrapper} from "./scene-bootstrapper";
+import {HtmlSubtitleController} from "./subtitle-controller";
 
 export function createVLibrasExperience(
   wrapper: HTMLElement,
@@ -20,6 +16,7 @@ export function createVLibrasExperience(
     avatarLoader: new GltfAvatarLoader(),
     animationLoader: new GltfAnimationLoader(),
     animationController: new MixerAnimationController(),
+    subtitleController: new HtmlSubtitleController(),
     renderLoop: new ResponsiveRenderLoop(),
     sceneDebugger: new ObjectTreeSceneDebugger(),
     modelPath: baseModelUrl,

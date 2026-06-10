@@ -11,6 +11,7 @@ import { SceneDebugger } from "./scene-debugger";
 import { SceneBootstrapper } from "./scene-bootstrapper";
 import { SceneRuntime } from "./types";
 import { AnimationLoader } from "./animation-loader";
+import { SubtitleController } from "./subtitle-controller";
 import EventEmitter from "events";
 
 export interface VLibrasExperienceDependencies {
@@ -19,6 +20,7 @@ export interface VLibrasExperienceDependencies {
   avatarLoader: AvatarLoader;
   animationLoader: AnimationLoader;
   animationController: AnimationController;
+  subtitleController: SubtitleController;
   renderLoop: RenderLoop;
   sceneDebugger: SceneDebugger;
   modelPath: string;
@@ -42,9 +44,14 @@ export class VLibrasExperience extends EventEmitter implements Experience {
     this.dependencies.environmentBuilder.build(this.runtime);
     const avatar = await this.dependencies.avatarLoader.load(
       this.dependencies.modelPath,
+    this.dependencies.subtitleController.start(this.runtime.subtitleContainer);
     );
-    this.runtime.scene.add(avatar.object);
-    this.dependencies.animationController.bind(avatar.object, []);
+    
+    this.dependencies.animationController.start(
+      loadedAvatar.object,
+      [],
+      this.dependencies.subtitleController,
+    );
 
     this.dependencies.renderLoop.start(this.runtime, this.updateObjects);
     this.emit("load");
@@ -68,9 +75,11 @@ export class VLibrasExperience extends EventEmitter implements Experience {
     return this.dependencies.animationController;
   }
 
+  public getSubtitleController(): SubtitleController {
+    return this.dependencies.subtitleController;
+  }
+
   private updateObjects = (delta: number): void => {
     this.dependencies.animationController.update(delta);
   };
-
-  private registerEvents(): void {}
 }
