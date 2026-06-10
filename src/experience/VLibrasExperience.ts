@@ -1,24 +1,21 @@
-import * as Three from "three";
 import { Experience } from "./Experience";
 import {
   AnimationController,
   MixerAnimationController,
 } from "./animation-controller";
-import { AvatarLoader } from "./avatar-loader";
 import { EnvironmentBuilder } from "./environment-builder";
 import { RenderLoop } from "./render-loop";
 import { SceneDebugger } from "./scene-debugger";
 import { SceneBootstrapper } from "./scene-bootstrapper";
 import { SceneRuntime } from "./types";
-import { AnimationLoader } from "./animation-loader";
 import { SubtitleController } from "./subtitle-controller";
+import { AvatarController } from "./avatar-controller";
 import EventEmitter from "events";
 
 export interface VLibrasExperienceDependencies {
   sceneBootstrapper: SceneBootstrapper;
   environmentBuilder: EnvironmentBuilder;
-  avatarLoader: AvatarLoader;
-  animationLoader: AnimationLoader;
+  avatarController: AvatarController;
   animationController: AnimationController;
   subtitleController: SubtitleController;
   renderLoop: RenderLoop;
@@ -42,9 +39,11 @@ export class VLibrasExperience extends EventEmitter implements Experience {
   public async init(): Promise<void> {
     console.debug("[Experience] init");
     this.dependencies.environmentBuilder.build(this.runtime);
-    const avatar = await this.dependencies.avatarLoader.load(
-      this.dependencies.modelPath,
     this.dependencies.subtitleController.start(this.runtime.subtitleContainer);
+
+    const loadedAvatar = await this.dependencies.avatarController.start(
+      "icaro",
+      this.runtime.scene,
     );
     
     this.dependencies.animationController.start(

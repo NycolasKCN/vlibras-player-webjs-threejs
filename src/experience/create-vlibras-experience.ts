@@ -5,6 +5,7 @@ import {ResponsiveRenderLoop} from "./render-loop";
 import {ObjectTreeSceneDebugger} from "./scene-debugger";
 import {ThreeSceneBootstrapper} from "./scene-bootstrapper";
 import {HtmlSubtitleController} from "./subtitle-controller";
+import {AvatarControllerImpl} from "./avatar-controller";
 
 export function createVLibrasExperience(
   wrapper: HTMLElement,
@@ -13,8 +14,7 @@ export function createVLibrasExperience(
   const dependencies: VLibrasExperienceDependencies = {
     sceneBootstrapper: new ThreeSceneBootstrapper(),
     environmentBuilder: new ThreeEnvironmentBuilder(),
-    avatarLoader: new GltfAvatarLoader(),
-    animationLoader: new GltfAnimationLoader(),
+    avatarController: new AvatarControllerImpl(),
     animationController: new MixerAnimationController(),
     subtitleController: new HtmlSubtitleController(),
     renderLoop: new ResponsiveRenderLoop(),

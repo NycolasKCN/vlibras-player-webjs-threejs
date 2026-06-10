@@ -1,14 +1,22 @@
-import { GLTFLoader } from 'three/examples/jsm/Addons.js';
-import { LoadedAvatar } from './types';
+import { DRACOLoader, GLTFLoader } from "three/examples/jsm/Addons.js";
+import { LoadedAvatar } from "./types";
 
-const OBJECT_NAME = 'Armature001';
+const OBJECT_NAME = "Armature001";
 
 export interface AvatarLoader {
   load(path: string): Promise<LoadedAvatar>;
 }
 
 export class GltfAvatarLoader implements AvatarLoader {
-  constructor(private readonly loader: GLTFLoader = new GLTFLoader().setCrossOrigin('anonymous')) {}
+  private readonly loader: GLTFLoader;
+
+  constructor() {
+    this.loader = new GLTFLoader().setCrossOrigin("anonymous");
+
+    // const dracoLoader = new DRACOLoader();
+    // dracoLoader.setDecoderPath("/examples/jsm/libs/draco/");
+    // this.loader.setDRACOLoader(dracoLoader);
+  }
 
   public async load(path: string): Promise<LoadedAvatar> {
     const gltf = await this.loader.loadAsync(path);
