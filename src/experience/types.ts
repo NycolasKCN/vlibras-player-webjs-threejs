@@ -13,6 +13,7 @@ export interface LoadedAvatar {
   clips: Three.AnimationClip[];
 }
 
-export interface LoadedAnimationClips {
-  clips: Three.AnimationClip[];
+export interface GlossAnimationClip {
+  word: string,
+  clip: Three.AnimationClip | undefined;
 }

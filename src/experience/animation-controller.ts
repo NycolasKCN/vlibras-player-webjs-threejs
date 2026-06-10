@@ -2,24 +2,22 @@ import { EventEmitter } from "events";
 import * as Three from "three";
 import { AnimationLoader, GltfAnimationLoader } from "./animation-loader";
 import { SubtitleController } from "./subtitle-controller";
+import { GlossAnimationClip } from "./types";
+import { alphabetGenerator } from "./util";
 
 export interface AnimationController extends EventEmitter {
-  start(
-    object: Three.Object3D,
-    clips: Three.AnimationClip[],
-    subtitleController: SubtitleController,
-  ): void;
+  start(object: Three.Object3D, subtitleController: SubtitleController): void;
   update(delta: number): void;
   pause(): void;
   stop(): void;
   setSpeed(speed: number): void;
   listAnimations(): string[];
-  playGlosa(glosa?: string): void;
+  play(glosa?: string): void;
 }
 
 interface ActiveAnimation {
   index: number;
-  action: Three.AnimationAction;
+  action?: Three.AnimationAction;
 }
 
 export class MixerAnimationController
@@ -27,92 +25,34 @@ export class MixerAnimationController
   implements AnimationController
 {
   private mixer?: Three.AnimationMixer;
-  private clips: Three.AnimationClip[] = [];
+  private glossAnimationClips: GlossAnimationClip[] = [];
+  private alphabet: Map<string, GlossAnimationClip> = new Map();
   private currentAnimation?: ActiveAnimation;
   private animationLoader: AnimationLoader = new GltfAnimationLoader();
   private subtitleController?: SubtitleController;
   private _speed: number = 1;
 
-  public start(
+  async start(
     object: Three.Object3D,
-    clips: Three.AnimationClip[],
     subtitleController: SubtitleController,
-  ): void {
+  ): Promise<void> {
     this.subtitleController = subtitleController;
     this.currentAnimation = undefined;
+    await this.loadAlphabet();
     this.mixer = new Three.AnimationMixer(object);
     this.mixer.addEventListener("finished", () => {
       this.play();
     });
   }
 
-  async playGlosa(glosa?: string): Promise<void> {
-    // if (this.isPlaying) {
-    //   this.stop();
-    // }
+  async play(glosa?: string): Promise<void> {
     if (glosa) {
       this.isLoading = true;
-      await this.loadAnimationClips(glosa);
+      await this.loadClips(glosa);
       this.isLoading = false;
     }
 
-    this.play();
-  }
-
-  public pause(): void {
-    if (!this.mixer) {
-      return;
-    }
-    this.mixer.timeScale = 0;
-    this.isPaused = true;
-  }
-
-  public stop(): void {
-    if (this.currentAnimation) {
-      this.currentAnimation.action.stop();
-    }
-    this.finishedCleanup();
-  }
-
-  public setSpeed(speed: number): void {
-    if (!this.mixer || speed > 2.5 || speed < 0.5) {
-      return;
-    }
-    this._speed = speed;
-
-    if (!this.isPaused) {
-      console.debug("[Animation] setting mixer timeScale", speed);
-      this.mixer.timeScale = speed;
-    }
-  }
-
-  public update(delta: number): void {
-    if (!this.mixer) {
-      return;
-    }
-    this.mixer.update(delta);
-  }
-
-  public listAnimations(): string[] {
-    return this.clips.map((clip) => clip.name);
-  }
-
-  private async loadAnimationClips(glosa: string) {
-    const words: string[] = glosa
-      .split(" ")
-      .filter((word) => {
-        return !(word.startsWith("[") && word.endsWith("]"));
-      })
-      .map((word) => {
-        return word.trim().replace(/\u200E/g, "");
-      });
-
-    const loadedClips = await this.animationLoader.load(words);
-    this.clips = loadedClips.clips;
-  }
-
-  private play(): void {
-    if (!this.mixer || this.clips.length === 0) {
+    if (!this.mixer || this.glossAnimationClips.length === 0) {
       return;
     }
 
@@ -126,12 +66,64 @@ export class MixerAnimationController
       nextAnimationIndex = this.currentAnimation.index + 1;
     }
 
-    if (nextAnimationIndex >= this.clips.length) {
+    if (nextAnimationIndex >= this.glossAnimationClips.length) {
       this.finishedCleanup();
       return;
     }
 
     this.playAnimation(nextAnimationIndex);
+  }
+
+  pause(): void {
+    if (!this.mixer) {
+      return;
+    }
+    this.mixer.timeScale = 0;
+    this.isPaused = true;
+  }
+
+  stop(): void {
+    if (this.currentAnimation) {
+      this.currentAnimation.action?.stop();
+    }
+    this.finishedCleanup();
+  }
+
+  setSpeed(speed: number): void {
+    if (!this.mixer || speed > 2.5 || speed < 0.5) {
+      return;
+    }
+    this._speed = speed;
+
+    if (!this.isPaused) {
+      console.debug("[Animation] setting mixer timeScale", speed);
+      this.mixer.timeScale = speed;
+    }
+  }
+
+  update(delta: number): void {
+    if (!this.mixer) {
+      return;
+    }
+    this.mixer.update(delta);
+  }
+
+  listAnimations(): string[] {
+    return this.glossAnimationClips.map((clip) => clip.word);
+  }
+
+  private async loadClips(glosa: string) {
+    const words: string[] = glosa
+      .split(" ")
+      .filter((word) => {
+        return !(word.startsWith("[") && word.endsWith("]"));
+      })
+      .map((word) => {
+        return word.trim().replace(/\u200E/g, "");
+      });
+
+    const clips = await this.animationLoader.load(words);
+    this.glossAnimationClips = clips;
   }
 
   private resume() {
@@ -144,23 +136,34 @@ export class MixerAnimationController
   // FIXME: Corrigir problema do crossFading que não tá funcionando pois o fluxo segue:
   // [clip 1 começa] ──► [clip 1 termina] ──► evento "finished" ──► [clip 2 começa]
   private playAnimation(index: number): void {
-    if (!this.mixer || this.clips.length === 0) {
+    if (!this.mixer || this.glossAnimationClips.length === 0) {
       return;
     }
 
-    const clip = this.clips[index];
-    const action = this.mixer.clipAction(clip);
+    const glossToPlay = this.glossAnimationClips[index];
+    if (!glossToPlay.clip) {
+      // FIXME: Implementar caminho alternativo para SOLETRAR a plavra
+      console.debug("[AnimationController] gloss don't have any clip, skiping");
+      this.currentAnimation = { index };
+      this.play();
+      return;
+    }
+
+    const action = this.mixer.clipAction(glossToPlay.clip);
     action.reset();
     action.weight = 1;
     action.setLoop(Three.LoopOnce, 1);
     action.clampWhenFinished = true;
 
-    if (this.currentAnimation) {
+    if (this.currentAnimation && this.currentAnimation.action) {
       action.crossFadeFrom(this.currentAnimation.action, 0.2, true);
     }
 
-    console.debug("[Animation] Playing animation: ", clip.name);
-    this.subtitleController?.update(clip.name);
+    console.debug(
+      "[AnimationController] Playing clip: ",
+      glossToPlay.clip.name,
+    );
+    this.subtitleController?.update(glossToPlay.word);
     this.isPlaying = true;
     action.play();
     this.currentAnimation = { index, action };
@@ -172,8 +175,10 @@ export class MixerAnimationController
     this.subtitleController?.clear();
     this.currentAnimation = undefined;
     this.mixer?.stopAllAction();
-    this.clips.forEach((clip) => {
-      this.mixer?.uncacheAction(clip);
+    this.glossAnimationClips.forEach((gloss) => {
+      if (gloss.clip) {
+        this.mixer?.uncacheAction(gloss.clip);
+      }
     });
     this.isPlaying = false;
   }
@@ -182,7 +187,18 @@ export class MixerAnimationController
     const progress = this.currentAnimation
       ? this.currentAnimation.index + 1
       : 0;
-    this.emit("state:progress", { progress, total: this.clips.length });
+    this.emit("state:progress", {
+      progress,
+      total: this.glossAnimationClips.length,
+    });
+  }
+
+  private async loadAlphabet(): Promise<void> {
+    const alphabet = [...alphabetGenerator("A", "Z")];
+    const clips = await this.animationLoader.load(alphabet);
+    clips.forEach((clip: GlossAnimationClip) => {
+      this.alphabet.set(clip.word, clip);
+    });
   }
 
   private _isPaused: boolean = false;
@@ -201,7 +217,6 @@ export class MixerAnimationController
       });
     }
   }
-
   private get isPlaying(): boolean {
     return this._isPlaying;
   }

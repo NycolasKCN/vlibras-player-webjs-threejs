@@ -20,7 +20,6 @@ export interface VLibrasExperienceDependencies {
   subtitleController: SubtitleController;
   renderLoop: RenderLoop;
   sceneDebugger: SceneDebugger;
-  modelPath: string;
 }
 
 export class VLibrasExperience extends EventEmitter implements Experience {
@@ -45,10 +44,9 @@ export class VLibrasExperience extends EventEmitter implements Experience {
       "icaro",
       this.runtime.scene,
     );
-    
-    this.dependencies.animationController.start(
+
+    await this.dependencies.animationController.start(
       loadedAvatar.object,
-      [],
       this.dependencies.subtitleController,
     );
 
@@ -76,6 +74,10 @@ export class VLibrasExperience extends EventEmitter implements Experience {
 
   public getSubtitleController(): SubtitleController {
     return this.dependencies.subtitleController;
+  }
+
+  public getAvatarController(): AvatarController {
+    return this.dependencies.avatarController;
   }
 
   private updateObjects = (delta: number): void => {

@@ -9,7 +9,6 @@ import {AvatarControllerImpl} from "./avatar-controller";
 
 export function createVLibrasExperience(
   wrapper: HTMLElement,
-  baseModelUrl: string = "/resources/model/base-model.glb",
 ): VLibrasExperience {
   const dependencies: VLibrasExperienceDependencies = {
     sceneBootstrapper: new ThreeSceneBootstrapper(),
@@ -19,7 +18,6 @@ export function createVLibrasExperience(
     subtitleController: new HtmlSubtitleController(),
     renderLoop: new ResponsiveRenderLoop(),
     sceneDebugger: new ObjectTreeSceneDebugger(),
-    modelPath: baseModelUrl,
   };
   return new VLibrasExperience(wrapper, dependencies);
 }

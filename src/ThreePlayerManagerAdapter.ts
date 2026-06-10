@@ -1,4 +1,5 @@
 import { AnimationController } from "./experience/animation-controller";
+import { AvatarController } from "./experience/avatar-controller";
 import { SubtitleController } from "./experience/subtitle-controller";
 import { VLibrasExperience } from "./experience/VLibrasExperience";
 import { AbstractPlayerManagerAdapter } from "./PlayerManagerAdapter";
@@ -8,6 +9,7 @@ export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdap
   currentBaseUrl: string;
   animationController: AnimationController | null;
   subtitleController: SubtitleController | null;
+  avatarController: AvatarController | null;
 
   constructor() {
     super();
@@ -15,12 +17,14 @@ export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdap
     this.currentBaseUrl = "";
     this.animationController = null;
     this.subtitleController = null;
+    this.avatarController = null;
   }
 
   setPlayerReference(player: VLibrasExperience): void {
     this.player = player;
     this.animationController = this.player.getAnimationController();
     this.subtitleController = this.player.getSubtitleController();
+    this.avatarController = this.player.getAvatarController();
     this.registerExperienceEvents();
   }
 
@@ -30,7 +34,7 @@ export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdap
 
   play(glosa?: string): void {
     console.debug("[PlayerManager] play: ", glosa);
-    this.animationController?.playGlosa(glosa);
+    this.animationController?.play(glosa);
   }
 
   pause(): void {
@@ -63,6 +67,7 @@ export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdap
 
   changeAvatar(avatarName: string): void {
     console.debug("[PlayerManager] changeAvatar: ", avatarName);
+    this.avatarController?.changeAvatar(avatarName);
   }
 
   setBaseUrl(url: string): void {
@@ -92,5 +97,9 @@ export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdap
         this.emit("state:progress", state);
       },
     );
+
+    this.avatarController!.on("avatar:change", (avatarName: string) => {
+      this.emit("GetAvatar", { avatar: avatarName });
+    });
   }
 }

@@ -170,7 +170,7 @@ export default class Player extends EventEmitter {
       return;
     }
 
-    this.player = createVLibrasExperience(wrapper, config.baseModelUrl);
+    this.player = createVLibrasExperience(wrapper);
     this.playerManager.setPlayerReference(this.player);
 
     this.player.init();
