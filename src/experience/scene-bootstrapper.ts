@@ -77,10 +77,12 @@ export class ThreeSceneBootstrapper implements SceneBootstrapper {
     vlSubtitle.setAttribute("id", "#subtitle");
     assign(vlSubtitle.style, {
       position: "absolute",
+      display: "grid",
+      placeItems: "center",
       top: "4px",
       left: "50%",
+      width: "100%",
       transform: "translateX(-50%)",
-
     });
     vlContainer.appendChild(vlSubtitle);
 

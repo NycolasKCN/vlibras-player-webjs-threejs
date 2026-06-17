@@ -12,7 +12,7 @@ export class HtmlSubtitleController
   extends EventEmitter
   implements SubtitleController
 {
-  private _subtitleElement?: HTMLParagraphElement;
+  private _subtitleElement?: HTMLElement;
   private enabled: boolean = true;
 
   constructor() {
@@ -20,13 +20,15 @@ export class HtmlSubtitleController
   }
 
   start(subtitleContainer: HTMLDivElement): void {
-    this._subtitleElement = document.createElement("p");
+    this._subtitleElement = document.createElement("span");
     Object.assign(this._subtitleElement.style, {
-      display: this.enabled ? "block" : "none",
+      display: this.enabled ? "inline" : "none",
+      width: "100%",
       color: "#2b2b2b",
       fontSize: "20px",
-      fontWeight: "600",
+      fontWeight: "500",
       fontFamily: "arial",
+      textAlign: "center",
       whiteSpace: "nowrap",
     });
     subtitleContainer.appendChild(this._subtitleElement);
@@ -36,7 +38,7 @@ export class HtmlSubtitleController
     this.enabled = !this.enabled;
     if (this._subtitleElement) {
       Object.assign(this._subtitleElement.style, {
-        display: this.enabled ? "block" : "none",
+        display: this.enabled ? "inline" : "none",
       });
     }
     this.emit("subtitle:toggle", { enabled: this.enabled });
@@ -44,11 +46,11 @@ export class HtmlSubtitleController
 
   update(text: string): void {
     if (!this._subtitleElement) return;
-    this._subtitleElement.textContent = text;
+    this._subtitleElement.innerHTML = text;
   }
 
   clear(): void {
     if (!this._subtitleElement) return;
-    this._subtitleElement.textContent = "";
+    this._subtitleElement.innerHTML = "";
   }
 }

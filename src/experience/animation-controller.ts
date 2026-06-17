@@ -4,6 +4,9 @@ import { AnimationLoader, GltfAnimationLoader } from "./animation-loader";
 import { SubtitleController } from "./subtitle-controller";
 import { GlossAnimationClip } from "./types";
 import { alphabetGenerator } from "./util";
+import { AlphabetSpeller, SpellerStrategy } from "./speller";
+
+const NEXT_ANIMATION_THRESHOLD = 86;
 
 export interface AnimationController extends EventEmitter {
   start(object: Three.Object3D, subtitleController: SubtitleController): void;
@@ -17,6 +20,7 @@ export interface AnimationController extends EventEmitter {
 
 interface ActiveAnimation {
   index: number;
+  isLast: boolean;
   action?: Three.AnimationAction;
 }
 
@@ -32,6 +36,8 @@ export class MixerAnimationController
   private subtitleController?: SubtitleController;
   private _speed: number = 1;
 
+  private speller: SpellerStrategy = new AlphabetSpeller();
+
   async start(
     object: Three.Object3D,
     subtitleController: SubtitleController,
@@ -40,9 +46,9 @@ export class MixerAnimationController
     this.currentAnimation = undefined;
     await this.loadAlphabet();
     this.mixer = new Three.AnimationMixer(object);
-    this.mixer.addEventListener("finished", () => {
-      this.play();
-    });
+    // this.mixer.addEventListener("finished", () => {
+    //   this.play();
+    // });
   }
 
   async play(glosa?: string): Promise<void> {
@@ -71,7 +77,9 @@ export class MixerAnimationController
       return;
     }
 
-    this.playAnimation(nextAnimationIndex);
+    let isLast: boolean =
+      nextAnimationIndex === this.glossAnimationClips.length - 1;
+    this.playAnimation(nextAnimationIndex, isLast);
   }
 
   pause(): void {
@@ -85,6 +93,9 @@ export class MixerAnimationController
   stop(): void {
     if (this.currentAnimation) {
       this.currentAnimation.action?.stop();
+    }
+    if (this.isPaused) {
+      this.resume();
     }
     this.finishedCleanup();
   }
@@ -105,6 +116,15 @@ export class MixerAnimationController
     if (!this.mixer) {
       return;
     }
+
+    if (this.currentAnimation && this.currentAnimation.action) {
+      const action = this.currentAnimation.action;
+      const progress = (action.time / action.getClip().duration) * 100;
+      if (progress >= NEXT_ANIMATION_THRESHOLD) {
+        this.play();
+      }
+    }
+
     this.mixer.update(delta);
   }
 
@@ -122,8 +142,18 @@ export class MixerAnimationController
         return word.trim().replace(/\u200E/g, "");
       });
 
-    const clips = await this.animationLoader.load(words);
-    this.glossAnimationClips = clips;
+    const initialClips = await this.animationLoader.load(words);
+
+    this.glossAnimationClips = initialClips.flatMap((gloss) => {
+      if (gloss.clip) {
+        return [gloss];
+      }
+
+      console.debug(
+        `[AnimationController] Glosa '${gloss.word}' não possui animação.`,
+      );
+      return this.speller.spell(gloss.word, this.alphabet);
+    });
   }
 
   private resume() {
@@ -133,18 +163,15 @@ export class MixerAnimationController
     this.isPaused = false;
   }
 
-  // FIXME: Corrigir problema do crossFading que não tá funcionando pois o fluxo segue:
-  // [clip 1 começa] ──► [clip 1 termina] ──► evento "finished" ──► [clip 2 começa]
-  private playAnimation(index: number): void {
+  private playAnimation(index: number, isLast: boolean): void {
     if (!this.mixer || this.glossAnimationClips.length === 0) {
       return;
     }
 
     const glossToPlay = this.glossAnimationClips[index];
     if (!glossToPlay.clip) {
-      // FIXME: Implementar caminho alternativo para SOLETRAR a plavra
       console.debug("[AnimationController] gloss don't have any clip, skiping");
-      this.currentAnimation = { index };
+      this.currentAnimation = { index, isLast };
       this.play();
       return;
     }
@@ -153,10 +180,9 @@ export class MixerAnimationController
     action.reset();
     action.weight = 1;
     action.setLoop(Three.LoopOnce, 1);
-    action.clampWhenFinished = true;
 
     if (this.currentAnimation && this.currentAnimation.action) {
-      action.crossFadeFrom(this.currentAnimation.action, 0.2, true);
+      action.crossFadeFrom(this.currentAnimation.action, 0.8, false);
     }
 
     console.debug(
@@ -166,7 +192,7 @@ export class MixerAnimationController
     this.subtitleController?.update(glossToPlay.word);
     this.isPlaying = true;
     action.play();
-    this.currentAnimation = { index, action };
+    this.currentAnimation = { index, action, isLast };
     this.emitProgress();
   }
 
