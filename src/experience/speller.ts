@@ -8,7 +8,6 @@ export interface SpellerStrategy {
 }
 
 export class AlphabetSpeller implements SpellerStrategy {
-  // FIXME: Verificar situação com letras acentuadas
   spell(
     word: string,
     alphabetMap: Map<string, GlossAnimationClip>,
@@ -17,11 +16,15 @@ export class AlphabetSpeller implements SpellerStrategy {
 
     return chars
       .map((char, currentIndex) => {
-        const letterClip = alphabetMap.get(char);
+        const letterClip = alphabetMap.get(this.normalizeChar(char));
 
         if (letterClip && letterClip.clip) {
           const formattedSubtitle = chars
-            .map((c, i) => (i === currentIndex ? `<span style="font-weight: bold; display: inline;">${c}</span>` : c))
+            .map((c, i) =>
+              i === currentIndex
+                ? `<span style="font-weight: bold; display: inline;">${c}</span>`
+                : c,
+            )
             .join("-");
 
           return {
@@ -33,5 +36,9 @@ export class AlphabetSpeller implements SpellerStrategy {
         return undefined;
       })
       .filter((clip): clip is GlossAnimationClip => clip !== undefined);
+  }
+
+  private normalizeChar(char: string): string {
+    return char.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 }

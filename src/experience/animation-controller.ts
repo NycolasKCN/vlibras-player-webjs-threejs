@@ -6,7 +6,8 @@ import { GlossAnimationClip } from "./types";
 import { alphabetGenerator } from "./util";
 import { AlphabetSpeller, SpellerStrategy } from "./speller";
 
-const NEXT_ANIMATION_THRESHOLD = 86;
+const NEXT_ANIMATION_THRESHOLD = 70;
+const ANIMATION_CROSS_FADE_TIME = 0.6;
 
 export interface AnimationController extends EventEmitter {
   start(object: Three.Object3D, subtitleController: SubtitleController): void;
@@ -46,9 +47,6 @@ export class MixerAnimationController
     this.currentAnimation = undefined;
     await this.loadAlphabet();
     this.mixer = new Three.AnimationMixer(object);
-    // this.mixer.addEventListener("finished", () => {
-    //   this.play();
-    // });
   }
 
   async play(glosa?: string): Promise<void> {
@@ -170,7 +168,6 @@ export class MixerAnimationController
 
     const glossToPlay = this.glossAnimationClips[index];
     if (!glossToPlay.clip) {
-      console.debug("[AnimationController] gloss don't have any clip, skiping");
       this.currentAnimation = { index, isLast };
       this.play();
       return;
@@ -182,11 +179,15 @@ export class MixerAnimationController
     action.setLoop(Three.LoopOnce, 1);
 
     if (this.currentAnimation && this.currentAnimation.action) {
-      action.crossFadeFrom(this.currentAnimation.action, 0.8, false);
+      action.crossFadeFrom(
+        this.currentAnimation.action,
+        ANIMATION_CROSS_FADE_TIME,
+        false,
+      );
     }
 
     console.debug(
-      "[AnimationController] Playing clip: ",
+      "[AnimationController] Tocando animação: ",
       glossToPlay.clip.name,
     );
     this.subtitleController?.update(glossToPlay.word);
@@ -197,7 +198,7 @@ export class MixerAnimationController
   }
 
   private finishedCleanup(): void {
-    console.debug("[Animation] animation finished");
+    console.debug("[Animation] Animação finalizada");
     this.subtitleController?.clear();
     this.currentAnimation = undefined;
     this.mixer?.stopAllAction();
