@@ -5,12 +5,18 @@ import { SubtitleController } from "./subtitle-controller";
 import { GlossAnimationClip } from "./types";
 import { alphabetGenerator } from "./util";
 import { AlphabetSpeller, SpellerStrategy } from "./speller";
-
-const NEXT_ANIMATION_THRESHOLD = 70;
-const ANIMATION_CROSS_FADE_TIME = 0.6;
+import {
+  NEXT_ANIMATION_THRESHOLD,
+  ANIMATION_CROSS_FADE_TIME,
+  MAX_ANIMATION_SPEED,
+  MIN_ANIMATION_SPEED,
+} from "./config";
 
 export interface AnimationController extends EventEmitter {
-  start(object: Three.Object3D, subtitleController: SubtitleController): void;
+  start(
+    object: Three.Object3D,
+    subtitleController: SubtitleController,
+  ): Promise<void>;
   update(delta: number): void;
   pause(): void;
   stop(): void;
@@ -99,7 +105,11 @@ export class MixerAnimationController
   }
 
   setSpeed(speed: number): void {
-    if (!this.mixer || speed > 2.5 || speed < 0.5) {
+    if (
+      !this.mixer ||
+      speed > MAX_ANIMATION_SPEED ||
+      speed < MIN_ANIMATION_SPEED
+    ) {
       return;
     }
     this._speed = speed;

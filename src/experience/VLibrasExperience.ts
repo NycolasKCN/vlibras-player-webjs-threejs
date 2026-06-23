@@ -36,7 +36,7 @@ export class VLibrasExperience extends EventEmitter implements Experience {
   }
 
   public async init(): Promise<void> {
-    console.debug("[Experience] init");
+    console.debug("[Experience] Iniciando");
     this.dependencies.environmentBuilder.build(this.runtime);
     this.dependencies.subtitleController.start(this.runtime.subtitleContainer);
 
@@ -52,7 +52,7 @@ export class VLibrasExperience extends EventEmitter implements Experience {
 
     this.dependencies.renderLoop.start(this.runtime, this.updateObjects);
     this.emit("load");
-    console.debug("[Experience] Loaded and started");
+    console.debug("[Experience] Iniciado e carregado");
   }
 
   public start(): void {}

@@ -1,6 +1,7 @@
 import { AnimationController } from "./experience/animation-controller";
 import { AvatarController } from "./experience/avatar-controller";
 import { SubtitleController } from "./experience/subtitle-controller";
+import { EMOTION } from "./experience/types";
 import { VLibrasExperience } from "./experience/VLibrasExperience";
 import { AbstractPlayerManagerAdapter } from "./PlayerManagerAdapter";
 
@@ -28,8 +29,26 @@ export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdap
     this.registerExperienceEvents();
   }
 
-  applyEmotion(action: string, intensity: number | string): void {
-    console.debug("[PlayerManager] applyEmotion: ", action, intensity);
+  applyEmotion(action: string, command: string): void {
+    console.debug("[PlayerManager] applyEmotion: ", action, command);
+    let emotion: EMOTION;
+    switch (command) {
+      case "ApplyHappyEmotion":
+        emotion = EMOTION.HAPPY;
+        break;
+      case "ApplySadEmotion":
+        emotion = EMOTION.SAD;
+        break;
+      case "ApplyDefaultEmotion":
+        emotion = EMOTION.NEUTRAL;
+        break;
+      default:
+        emotion = EMOTION.NEUTRAL;
+        break;
+    }
+
+    this.avatarController!.applyEmotion(emotion);
+    console.debug("applyEmotion Called", emotion);
   }
 
   play(glosa?: string): void {
