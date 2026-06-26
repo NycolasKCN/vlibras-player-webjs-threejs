@@ -17,8 +17,6 @@ import {
 import { VLibrasExperience } from "./experience/VLibrasExperience";
 import { createVLibrasExperience } from "./experience/create-vlibras-experience";
 
-let globalGlosaLenght = "";
-
 export default class Player extends EventEmitter {
   options: NormalizedPlayerOptions;
   playerManager: PlayerManagerAdapter<VLibrasExperience>;
@@ -116,6 +114,7 @@ export default class Player extends EventEmitter {
   playWellcome(): void {
     this.playerManager.playWellcome();
     this.emit("start:welcome");
+    this.emit("stop:welcome", true);
   }
 
   continue(): void {
@@ -177,7 +176,7 @@ export default class Player extends EventEmitter {
   }
 
   private changeStatus(status: PlayerStatus): void {
-    console.debug("[Player] changeStatus to ", status)
+    console.debug("[Player] changeStatus to ", status);
     switch (status) {
       case STATUSES.idle:
         if (this.status === STATUSES.playing) {

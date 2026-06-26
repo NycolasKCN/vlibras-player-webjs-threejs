@@ -1,3 +1,4 @@
+import * as Three from "three";
 import { AnimationController } from "./experience/animation-controller";
 import { AvatarController } from "./experience/avatar-controller";
 import { SubtitleController } from "./experience/subtitle-controller";
@@ -117,8 +118,11 @@ export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdap
       },
     );
 
-    this.avatarController!.on("avatar:change", (avatarName: string) => {
-      this.emit("GetAvatar", { avatar: avatarName });
-    });
+    this.avatarController!.on(
+      "avatar:change",
+      (event: { avatarName: string; avatarObject: Three.Object3D }) => {
+        this.emit("GetAvatar", { avatar: event.avatarName });
+      },
+    );
   }
 }

@@ -1,3 +1,4 @@
+import * as Three from "three";
 import { Experience } from "./Experience";
 import {
   AnimationController,
@@ -51,6 +52,7 @@ export class VLibrasExperience extends EventEmitter implements Experience {
     );
 
     this.dependencies.renderLoop.start(this.runtime, this.updateObjects);
+    this.registerEventsHandlers();
     this.emit("load");
     console.debug("[Experience] Iniciado e carregado");
   }
@@ -83,4 +85,13 @@ export class VLibrasExperience extends EventEmitter implements Experience {
   private updateObjects = (delta: number): void => {
     this.dependencies.animationController.update(delta);
   };
+
+  private registerEventsHandlers(): void {
+    this.dependencies.avatarController.on(
+      "avatar:change",
+      (event: { avatarName: string; avatarObject: Three.Object3D }) => {
+        this.dependencies.animationController.updateObject(event.avatarObject);
+      },
+    );
+  }
 }

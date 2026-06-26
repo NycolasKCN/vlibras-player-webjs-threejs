@@ -17,6 +17,7 @@ export interface AnimationController extends EventEmitter {
     object: Three.Object3D,
     subtitleController: SubtitleController,
   ): Promise<void>;
+  updateObject(object: Three.Object3D): void;
   update(delta: number): void;
   pause(): void;
   stop(): void;
@@ -52,6 +53,11 @@ export class MixerAnimationController
     this.subtitleController = subtitleController;
     this.currentAnimation = undefined;
     await this.loadAlphabet();
+    this.mixer = new Three.AnimationMixer(object);
+  }
+
+  updateObject(object: Three.Object3D): void {
+    this.currentAnimation = undefined;
     this.mixer = new Three.AnimationMixer(object);
   }
 
