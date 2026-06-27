@@ -7,7 +7,7 @@ export const MAX_ANIMATION_SPEED = 2.5;
 export const MIN_ANIMATION_SPEED = 0.5;
 
 export const AVATAR_ARMATURE_NAME = "Armature001";
-export const FACE_MESH_NAME = "cabecaModifAlisson";
+export const FACE_MESH_NAME = "Cabeca";
 export const STAMP_CENTER_NAME = "EstampaCentral";
 export const SHIRT_MESH_NAME = "Camisa";
 export const PANTS_MESH_NAME = "Calca";
@@ -16,80 +16,90 @@ export const IRIS_MESH_NAME = "Iris";
 export const EYES_MESH_NAME = "Olho";
 
 export const NEUTRAL_EMOTION_MORPH: FaceMorphTargets = {
-  baixaBocaCantoDir: 0,
-  baixaBocaCantoEsq: 0,
-  baixaCantoBoca: 0,
-  bico: 0,
-  bochechaContraida: 0,
-  bochechaInfla: 0,
-  bochechaInfladaDir: 0,
-  bochechaInfladaEsq: 0,
-  correcaoAbreBoca: 0,
+  baixarCantoBoca: 0,
+  baixarBocaCantoDir: 0,
+  baixarBocaCantoEsq: 0,
   labioContrair: 0.2,
-  labioSuperiorLevanta: 0,
-  sobrancelhaDirAberta: 0,
-  sobrancelhaDirBaixa: 0,
-  sobrancelhaDirLevanta: 0,
-  sobrancelhaDirRaiva: 0,
-  sobrancelhaEsqAberta: 0,
-  sobrancelhaEsqBaixa: 0,
-  sobrancelhaEsqLevanta: 0,
-  sobrancelhaEsqRaiva: 0,
-  sobrancelhaFranzir: 0,
+  labioSuperior: 0,
+  labioEsq: 0,
+  labioDir: 0,
   sorriso: 0.1,
+  bico: 0,
+
+  sobrancelhaFranzir: 0,
+  sobrancelhaDirBaixar: 0,
+  sobrancelhaEsqBaixar: 0,
+  sobrancelhaDirAbrir: 0,
+  sobrancelhaEsqAbrir: 0,
+  sobrancelhaDirRaiva: 0,
+  sobrancelhaEsqRaiva: 0,
+  sobrancelhaDirLevantar: 0,
+  sobrancelhaEsqLevantar: 0,
+
+  bochechaInflar: 0,
+  bochechaDirInflar: 0,
+  bochechaEsqInflar: 0,
+  bochechaContrair: 0,
+
+  fechaOlhos: 0,
 };
 
 export const HAPPY_EMOTION_MORPH: FaceMorphTargets = {
-  baixaBocaCantoDir: 0,
-  baixaBocaCantoEsq: 0,
-  baixaCantoBoca: 0,
-  bico: 0,
-  bochechaContraida: 0,
-  bochechaInfla: 0,
-  bochechaInfladaDir: 0,
-  bochechaInfladaEsq: 0,
-  correcaoAbreBoca: 0,
+  baixarCantoBoca: 0,
+  baixarBocaCantoDir: 0,
+  baixarBocaCantoEsq: 0,
   labioContrair: 0.2,
-  labioSuperiorLevanta: 0,
-  sobrancelhaDirAberta: 0,
-  sobrancelhaEsqAberta: 0,
-  sobrancelhaDirBaixa: 0,
-  sobrancelhaEsqBaixa: 0,
-  sobrancelhaDirLevanta: 0.15,
-  sobrancelhaEsqLevanta: 0.15,
+  labioSuperior: 0,
+  labioEsq: 0,
+  labioDir: 0,
+  sorriso: 0.6,
+  bico: 0,
+
+  sobrancelhaFranzir: 0,
+  sobrancelhaDirBaixar: 0,
+  sobrancelhaEsqBaixar: 0,
+  sobrancelhaDirAbrir: 0,
+  sobrancelhaEsqAbrir: 0,
   sobrancelhaDirRaiva: 0,
   sobrancelhaEsqRaiva: 0,
-  sobrancelhaFranzir: 0,
-  sorriso: 0.6,
+  sobrancelhaDirLevantar: 0.15,
+  sobrancelhaEsqLevantar: 0.15,
+
+  bochechaInflar: 0,
+  bochechaDirInflar: 0,
+  bochechaEsqInflar: 0,
+  bochechaContrair: 0,
+
+  fechaOlhos: 0,
 };
 
 export const SAD_EMOTION_MORPH: FaceMorphTargets = {
-  baixaBocaCantoDir: 0,
-  baixaBocaCantoEsq: 0,
-  baixaCantoBoca: 0.5,
+  baixarCantoBoca: 1,
+  baixarBocaCantoDir: 0,
+  baixarBocaCantoEsq: 0,
+  labioContrair: 0.6,
+  labioSuperior: 0,
+  labioEsq: 0,
+  labioDir: 0,
+  sorriso: 0,
   bico: 0,
-  bochechaContraida: 0,
-  bochechaInfla: 0,
-  bochechaInfladaDir: 0,
-  bochechaInfladaEsq: 0,
-  correcaoAbreBoca: 0,
-  labioContrair: 0.3,
-  labioSuperiorLevanta: 0,
-
-  sobrancelhaDirAberta: 0.8,
-  sobrancelhaEsqAberta: 1,
-
-  sobrancelhaDirBaixa: 0.21,
-  sobrancelhaEsqBaixa: 0.21,
-
-  sobrancelhaDirLevanta: 0,
-  sobrancelhaEsqLevanta: 0,
-
-  sobrancelhaDirRaiva: 0,
-  sobrancelhaEsqRaiva: 0,
 
   sobrancelhaFranzir: 0,
-  sorriso: 0,
+  sobrancelhaDirBaixar: 0.21,
+  sobrancelhaEsqBaixar: 0.21,
+  sobrancelhaDirAbrir: 1,
+  sobrancelhaEsqAbrir: 1,
+  sobrancelhaDirRaiva: 0,
+  sobrancelhaEsqRaiva: 0,
+  sobrancelhaDirLevantar: 0,
+  sobrancelhaEsqLevantar: 0,
+
+  bochechaInflar: 0,
+  bochechaDirInflar: 0,
+  bochechaEsqInflar: 0,
+  bochechaContrair: 0,
+
+  fechaOlhos: 0,
 };
 
 export const EMOTION_MORPH_MAP = {

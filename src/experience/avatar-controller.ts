@@ -71,7 +71,7 @@ export class AvatarControllerImpl
   }
 
   async changeAvatar(avatarName: AvatarName): Promise<void> {
-    console.debug("[AvatarController] changeAvatar");
+    console.debug("[AvatarController] changeAvatar", avatarName);
     if (!this.scene) return;
 
     const modelUrl = this.baseUrl + avatarName;
@@ -96,7 +96,7 @@ export class AvatarControllerImpl
   }
 
   async setPersonalization(url: string): Promise<void> {
-    console.debug("[AvatarController] setPersonalization");
+    console.debug("[AvatarController] setPersonalization", url);
     if (!this.scene) {
       return;
     }
@@ -116,25 +116,26 @@ export class AvatarControllerImpl
 
   // TODO: Fix EMOTION
   applyEmotion(emotion: EMOTION): void {
-    const faceGroup = this.scene!.getObjectByName(FACE_MESH_NAME) as
-      | Three.Group
+    const faceMesh = this.scene!.getObjectByName(FACE_MESH_NAME) as
+      | Three.SkinnedMesh
       | undefined;
 
-    if (!faceGroup) {
+    if (!faceMesh) {
       throw new Error("Mesh group da cabeça não encontrado");
     }
     if (!emotion) {
       return;
     }
 
-    faceGroup.traverse((obj) => {
-      if (obj.type === "SkinnedMesh") {
-        this.applyMothTargets(
-          obj as Three.SkinnedMesh,
-          EMOTION_MORPH_MAP[emotion],
-        );
-      }
-    });
+    if (!faceMesh.morphTargetDictionary || !faceMesh.morphTargetInfluences)
+      return;
+
+    const targets = EMOTION_MORPH_MAP[emotion];
+    for (const [name, weight] of Object.entries(targets)) {
+      const index = faceMesh.morphTargetDictionary[name];
+      if (index === undefined) continue;
+      faceMesh.morphTargetInfluences[index] = weight;
+    }
   }
 
   private async fetchPersonalizationJson(
@@ -190,16 +191,6 @@ export class AvatarControllerImpl
         transparent: true,
       });
       console.debug("[personalization] Logo aplicada ao peito");
-    }
-  }
-
-  private applyMothTargets(mesh: Three.Mesh, targets: FaceMorphTargets): void {
-    if (!mesh.morphTargetDictionary || !mesh.morphTargetInfluences) return;
-
-    for (const [name, weight] of Object.entries(targets)) {
-      const index = mesh.morphTargetDictionary[name];
-      if (index === undefined) continue;
-      mesh.morphTargetInfluences[index] = weight;
     }
   }
 

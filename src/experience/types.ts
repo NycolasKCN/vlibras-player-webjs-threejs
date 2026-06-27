@@ -25,25 +25,30 @@ export enum EMOTION {
 }
 
 export interface FaceMorphTargets {
-  baixaBocaCantoDir: number;
-  baixaBocaCantoEsq: number;
-  baixaCantoBoca: number;
-  bico: number;
-  bochechaContraida: number;
-  bochechaInfla: number;
-  bochechaInfladaDir: number;
-  bochechaInfladaEsq: number;
-  correcaoAbreBoca: number;
+  baixarCantoBoca: number;
+  baixarBocaCantoDir: number;
+  baixarBocaCantoEsq: number;
   labioContrair: number;
-  labioSuperiorLevanta: number;
-  sobrancelhaDirAberta: number;
-  sobrancelhaDirBaixa: number;
-  sobrancelhaDirLevanta: number;
-  sobrancelhaDirRaiva: number;
-  sobrancelhaEsqAberta: number;
-  sobrancelhaEsqBaixa: number;
-  sobrancelhaEsqLevanta: number;
-  sobrancelhaEsqRaiva: number;
-  sobrancelhaFranzir: number;
+  labioSuperior: number;
+  labioEsq: number;
+  labioDir: number;
   sorriso: number;
+  bico: number;
+
+  sobrancelhaFranzir: number;
+  sobrancelhaDirBaixar: number;
+  sobrancelhaEsqBaixar: number;
+  sobrancelhaDirAbrir: number;
+  sobrancelhaEsqAbrir: number;
+  sobrancelhaDirRaiva: number;
+  sobrancelhaEsqRaiva: number;
+  sobrancelhaDirLevantar: number;
+  sobrancelhaEsqLevantar: number;
+
+  bochechaInflar: number;
+  bochechaDirInflar: number;
+  bochechaEsqInflar: number;
+  bochechaContrair: number;
+
+  fechaOlhos: number;
 }
