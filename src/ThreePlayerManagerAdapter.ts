@@ -77,8 +77,9 @@ export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdap
     this.subtitleController?.toggleSubtitle();
   }
 
-  setPersonalization(personalization: string): void {
-    console.debug("[PlayerManager] setPersonalization: ", personalization);
+  setPersonalization(url: string): void {
+    console.debug("[PlayerManager] setPersonalization: ", url);
+    this.avatarController?.setPersonalization(url);
   }
 
   playWellcome(): void {
