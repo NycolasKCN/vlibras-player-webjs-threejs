@@ -2,7 +2,7 @@ import * as Three from "three";
 import EventEmitter from "events";
 
 export interface SubtitleController {
-  start(subtitleContainer: HTMLDivElement): void;
+  load(subtitleContainer: HTMLDivElement): void;
   toggleSubtitle(): void;
   update(text: string): void;
   clear(): void;
@@ -19,7 +19,7 @@ export class HtmlSubtitleController
     super();
   }
 
-  start(subtitleContainer: HTMLDivElement): void {
+  load(subtitleContainer: HTMLDivElement): void {
     this._subtitleElement = document.createElement("span");
     Object.assign(this._subtitleElement.style, {
       display: this.enabled ? "inline" : "none",

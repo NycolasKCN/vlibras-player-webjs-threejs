@@ -18,6 +18,21 @@ export interface GlossAnimationClip {
   clip: Three.AnimationClip | undefined;
 }
 
+export type AvatarName = "icaro" | "hosana" | "guga";
+
+export interface AvatarPersonalization {
+  calca: string;
+  camisa: string;
+  cabelo: string;
+  corpo: string;
+  avatar: AvatarName | "random";
+  iris: string;
+  olhos: string;
+  sombrancelhas: string;
+  pos: string;
+  logo: string;
+}
+
 export enum EMOTION {
   NEUTRAL = 1,
   HAPPY = 2,

@@ -84,6 +84,7 @@ export default class ThreePlayerManagerAdapter extends AbstractPlayerManagerAdap
 
   playWellcome(): void {
     console.debug("[PlayerManager] playWellcome");
+    this.animationController?.playWellcome();
   }
 
   changeAvatar(avatarName: string): void {

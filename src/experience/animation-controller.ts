@@ -13,7 +13,7 @@ import {
 } from "./config";
 
 export interface AnimationController extends EventEmitter {
-  start(
+  load(
     object: Three.Object3D,
     subtitleController: SubtitleController,
   ): Promise<void>;
@@ -24,6 +24,7 @@ export interface AnimationController extends EventEmitter {
   setSpeed(speed: number): void;
   listAnimations(): string[];
   play(glosa?: string): void;
+  playWellcome(): void;
 }
 
 interface ActiveAnimation {
@@ -46,7 +47,7 @@ export class MixerAnimationController
 
   private speller: SpellerStrategy = new AlphabetSpeller();
 
-  async start(
+  async load(
     object: Three.Object3D,
     subtitleController: SubtitleController,
   ): Promise<void> {
@@ -59,6 +60,9 @@ export class MixerAnimationController
   updateObject(object: Three.Object3D): void {
     this.currentAnimation = undefined;
     this.mixer = new Three.AnimationMixer(object);
+  }
+
+  playWellcome(): void {
   }
 
   async play(glosa?: string): Promise<void> {
@@ -121,7 +125,7 @@ export class MixerAnimationController
     this._speed = speed;
 
     if (!this.isPaused) {
-      console.debug("[Animation] setting mixer timeScale", speed);
+      console.debug("[Animation] Configurando velocidade para", speed);
       this.mixer.timeScale = speed;
     }
   }

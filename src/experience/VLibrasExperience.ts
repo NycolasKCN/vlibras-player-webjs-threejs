@@ -12,6 +12,7 @@ import { SceneRuntime } from "./types";
 import { SubtitleController } from "./subtitle-controller";
 import { AvatarController } from "./avatar-controller";
 import EventEmitter from "events";
+import { DEFAULT_PERSONALIZATION } from "./config";
 
 export interface VLibrasExperienceDependencies {
   sceneBootstrapper: SceneBootstrapper;
@@ -36,22 +37,21 @@ export class VLibrasExperience extends EventEmitter implements Experience {
     this.runtime = dependencies.sceneBootstrapper.bootstrap(wrapper);
   }
 
-  public async init(): Promise<void> {
+  public async load(): Promise<void> {
     console.debug("[Experience] Iniciando");
     this.dependencies.environmentBuilder.build(this.runtime);
-    this.dependencies.subtitleController.start(this.runtime.subtitleContainer);
+    this.dependencies.subtitleController.load(this.runtime.subtitleContainer);
 
-    const loadedAvatar = await this.dependencies.avatarController.start(
-      "icaro",
+    const loadedAvatar = await this.dependencies.avatarController.load(
       this.runtime.scene,
     );
 
-    await this.dependencies.animationController.start(
+    await this.dependencies.animationController.load(
       loadedAvatar.object,
       this.dependencies.subtitleController,
     );
 
-    this.dependencies.renderLoop.start(this.runtime, this.updateObjects);
+    this.dependencies.renderLoop.run(this.runtime, this.updateObjects);
     this.registerEventsHandlers();
     this.emit("load");
     console.debug("[Experience] Iniciado e carregado");
@@ -72,6 +72,10 @@ export class VLibrasExperience extends EventEmitter implements Experience {
 
   public getAnimationController(): AnimationController {
     return this.dependencies.animationController;
+  }
+
+  public getObject(name: string): Three.Object3D | undefined {
+    return this.runtime.scene.getObjectByName(name);
   }
 
   public getSubtitleController(): SubtitleController {

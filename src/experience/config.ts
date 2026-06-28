@@ -1,5 +1,4 @@
-import { AvatarPersonalization } from "./avatar-controller";
-import { EMOTION, FaceMorphTargets } from "./types";
+import { AvatarPersonalization, EMOTION, FaceMorphTargets } from "./types";
 
 export const NEXT_ANIMATION_THRESHOLD = 70;
 export const ANIMATION_CROSS_FADE_TIME = 0.6;
@@ -116,7 +115,7 @@ export const DEFAULT_PERSONALIZATION: AvatarPersonalization = {
   iris: "#000000",
   olhos: "#FFFFFF",
   sombrancelhas: "#000000",
-  avatar: "random",
+  avatar: "icaro",
   pos: "center",
   logo: "https://vlibras.gov.br/config/img/logo-lavid.png",
 };

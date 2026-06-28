@@ -34,6 +34,23 @@ export default class Player extends EventEmitter {
   region: string;
   onError!: (reason: string) => void;
 
+  load(wrapper: HTMLElement): void {
+    if (typeof this.options.progress === "function") {
+      this.progress = new this.options.progress(wrapper);
+    }
+    if (!WebGL.isWebGL2Available()) {
+      this.onError("unsupported");
+      alert("Seu navegador não suporta WEBGL");
+      console.error("Seu navegador não suporta WEBGL");
+      return;
+    }
+
+    this.player = createVLibrasExperience(wrapper);
+    this.playerManager.setPlayerReference(this.player);
+
+    this.player.load();
+  }
+
   constructor(options: PlayerOptions = {}) {
     super();
     console.debug("[Player] WebJS Constructor options: ", options);
@@ -112,8 +129,8 @@ export default class Player extends EventEmitter {
   }
 
   playWellcome(): void {
-    this.playerManager.playWellcome();
     this.emit("start:welcome");
+    this.playerManager.playWellcome();
     this.emit("stop:welcome", true);
   }
 
@@ -156,23 +173,6 @@ export default class Player extends EventEmitter {
   setRegion(region: string): void {
     this.region = region;
     this.playerManager.setBaseUrl(config.dictionaryUrl + region + "/");
-  }
-
-  load(wrapper: HTMLElement): void {
-    if (typeof this.options.progress === "function") {
-      this.progress = new this.options.progress(wrapper);
-    }
-    if (!WebGL.isWebGL2Available()) {
-      this.onError("unsupported");
-      alert("Seu navegador não suporta WEBGL");
-      console.error("Seu navegador não suporta WEBGL");
-      return;
-    }
-
-    this.player = createVLibrasExperience(wrapper);
-    this.playerManager.setPlayerReference(this.player);
-
-    this.player.init();
   }
 
   private changeStatus(status: PlayerStatus): void {

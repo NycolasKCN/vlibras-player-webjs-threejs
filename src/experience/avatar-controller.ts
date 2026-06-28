@@ -1,40 +1,26 @@
 import { EventEmitter } from "events";
 import * as Three from "three";
 import { AvatarLoader, GltfAvatarLoader } from "./avatar-loader";
-import { EMOTION, FaceMorphTargets, LoadedAvatar } from "./types";
 import {
-  AVATAR_ARMATURE_NAME,
-  FACE_MESH_NAME,
-  STAMP_CENTER_NAME,
-  SHIRT_MESH_NAME,
-  PANTS_MESH_NAME,
-  HAIR_MESH_NAME,
-  IRIS_MESH_NAME,
-  EYES_MESH_NAME,
-  DEFAULT_PERSONALIZATION,
-  EMOTION_MORPH_MAP,
+    AVATAR_ARMATURE_NAME,
+    DEFAULT_PERSONALIZATION,
+    EMOTION_MORPH_MAP,
+    EYES_MESH_NAME,
+    FACE_MESH_NAME,
+    HAIR_MESH_NAME,
+    IRIS_MESH_NAME,
+    PANTS_MESH_NAME,
+    SHIRT_MESH_NAME,
+    STAMP_CENTER_NAME,
 } from "./config";
-export type AvatarName = "icaro" | "hosana" | "guga";
+import { AvatarName, AvatarPersonalization, EMOTION, LoadedAvatar } from "./types";
 
 export interface AvatarController extends EventEmitter {
+  load(scene: Three.Scene): Promise<LoadedAvatar>;
   applyEmotion(emotion: EMOTION): void;
-  start(model: string, scene: Three.Scene): Promise<LoadedAvatar>;
   changeAvatar(avatar: string): void;
   setPersonalization(url: string): void;
   getAvatar(): string;
-}
-
-export interface AvatarPersonalization {
-  calca: string;
-  camisa: string;
-  cabelo: string;
-  corpo: string;
-  avatar: "icaro" | "rosana" | "guga" | "random";
-  iris: string;
-  olhos: string;
-  sombrancelhas: string;
-  pos: string;
-  logo: string;
 }
 
 export class AvatarControllerImpl
@@ -54,16 +40,18 @@ export class AvatarControllerImpl
     super();
     this.avatarLoader = new GltfAvatarLoader();
     this.textureLoader = new Three.TextureLoader();
-    this.currentAvatarName = "icaro";
     this.currentPersonalization = DEFAULT_PERSONALIZATION;
+    this.currentAvatarName =
+      this.currentPersonalization.avatar === "random"
+        ? "icaro"
+        : this.currentPersonalization.avatar;
     this.currentEmotion = EMOTION.NEUTRAL;
   }
 
-  async start(model: AvatarName, scene: Three.Scene): Promise<LoadedAvatar> {
-    const modelUrl = this.baseUrl + model;
+  async load(scene: Three.Scene): Promise<LoadedAvatar> {
+    const modelUrl = this.baseUrl + this.currentAvatarName;
     const avatar = await this.avatarLoader.load(modelUrl);
     scene.add(avatar.object);
-    this.currentAvatarName = model;
     this.scene = scene;
     this.applyPersonalization(this.currentPersonalization);
     this.applyEmotion(this.currentEmotion);
@@ -114,7 +102,6 @@ export class AvatarControllerImpl
     this.currentPersonalization = personalization;
   }
 
-  // TODO: Fix EMOTION
   applyEmotion(emotion: EMOTION): void {
     const faceMesh = this.scene!.getObjectByName(FACE_MESH_NAME) as
       | Three.SkinnedMesh

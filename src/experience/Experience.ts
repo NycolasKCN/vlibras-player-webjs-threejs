@@ -1,4 +1,4 @@
 export interface Experience {
-  init(): Promise<void>;
+  load(): Promise<void>;
   start(): void;
 }

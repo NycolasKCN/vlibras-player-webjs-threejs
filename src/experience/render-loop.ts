@@ -2,14 +2,14 @@ import * as Three from "three";
 import { SceneRuntime } from "./types";
 
 export interface RenderLoop {
-  start(
+  run(
     runtime: SceneRuntime,
     updateSceneObjects: (delta: number) => void,
   ): void;
 }
 
 export class ResponsiveRenderLoop implements RenderLoop {
-  public start(
+  public run(
     runtime: SceneRuntime,
     updateSceneObjects: (delta: number) => void,
   ): void {
