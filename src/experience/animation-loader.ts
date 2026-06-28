@@ -29,6 +29,8 @@ export class GltfAnimationLoader implements AnimationLoader {
           // We have to garantie that all gltf files has only one clip
           clip = (result as PromiseFulfilledResult<GLTF>).value.animations[0];
         }
+        // Remove word category
+        word = word.split("&")[0];
         return {
           word,
           clip,
