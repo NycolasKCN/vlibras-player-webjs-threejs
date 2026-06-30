@@ -1,18 +1,17 @@
+import EventEmitter from "events";
 import * as Three from "three";
 import { Experience } from "./Experience";
 import {
-  AnimationController,
-  MixerAnimationController,
+    AnimationController,
+    MixerAnimationController,
 } from "./animation-controller";
+import { AvatarController } from "./avatar-controller";
 import { EnvironmentBuilder } from "./environment-builder";
 import { RenderLoop } from "./render-loop";
-import { SceneDebugger } from "./scene-debugger";
 import { SceneBootstrapper } from "./scene-bootstrapper";
-import { SceneRuntime } from "./types";
+import { SceneDebugger } from "./scene-debugger";
 import { SubtitleController } from "./subtitle-controller";
-import { AvatarController } from "./avatar-controller";
-import EventEmitter from "events";
-import { DEFAULT_PERSONALIZATION } from "./config";
+import { SceneRuntime } from "./types";
 
 export interface VLibrasExperienceDependencies {
   sceneBootstrapper: SceneBootstrapper;

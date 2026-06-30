@@ -1,21 +1,21 @@
-import assign from "object-assign";
 import { EventEmitter } from "events";
+import assign from "object-assign";
 import { WebGL } from "three/examples/jsm/Addons";
 
 import * as config from "./config";
+import { createVLibrasExperience } from "./experience/create-vlibras-experience";
+import { VLibrasExperience } from "./experience/VLibrasExperience";
 import GlosaTranslator from "./GlosaTranslator";
 import { PlayerManagerAdapter } from "./PlayerManagerAdapter";
 import ThreePlayerManagerAdapter from "./ThreePlayerManagerAdapter";
 import {
-  NormalizedPlayerOptions,
-  PlayerStatus,
-  PlayerOptions,
-  PlayOptions,
-  TranslateOptions,
-  STATUSES,
+    NormalizedPlayerOptions,
+    PlayerOptions,
+    PlayerStatus,
+    PlayOptions,
+    STATUSES,
+    TranslateOptions,
 } from "./types/player.types";
-import { VLibrasExperience } from "./experience/VLibrasExperience";
-import { createVLibrasExperience } from "./experience/create-vlibras-experience";
 
 export default class Player extends EventEmitter {
   options: NormalizedPlayerOptions;
@@ -27,7 +27,7 @@ export default class Player extends EventEmitter {
   translated: boolean;
   text?: string;
   gloss?: string;
-  glosaLen: number = 0;
+  glosaLen = 0;
   loaded: boolean;
   progress: unknown | null;
   status: PlayerStatus;

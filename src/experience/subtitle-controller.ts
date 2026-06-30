@@ -1,4 +1,3 @@
-import * as Three from "three";
 import EventEmitter from "events";
 
 export interface SubtitleController {
@@ -13,7 +12,7 @@ export class HtmlSubtitleController
   implements SubtitleController
 {
   private _subtitleElement?: HTMLElement;
-  private enabled: boolean = true;
+  private enabled = true;
 
   constructor() {
     super();

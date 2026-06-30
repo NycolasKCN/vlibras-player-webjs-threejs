@@ -43,7 +43,7 @@ export class MixerAnimationController
   private currentAnimation?: ActiveAnimation;
   private animationLoader: AnimationLoader = new GltfAnimationLoader();
   private subtitleController?: SubtitleController;
-  private _speed: number = 1;
+  private _speed = 1;
 
   private speller: SpellerStrategy = new AlphabetSpeller();
 
@@ -91,7 +91,7 @@ export class MixerAnimationController
       return;
     }
 
-    let isLast: boolean =
+    const isLast: boolean =
       nextAnimationIndex === this.glossAnimationClips.length - 1;
     this.playAnimation(nextAnimationIndex, isLast);
   }
@@ -248,9 +248,9 @@ export class MixerAnimationController
     });
   }
 
-  private _isPaused: boolean = false;
-  private _isPlaying: boolean = false;
-  private _isLoading: boolean = false;
+  private _isPaused = false;
+  private _isPlaying = false;
+  private _isLoading = false;
   private get isPaused(): boolean {
     return this._isPaused;
   }

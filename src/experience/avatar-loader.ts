@@ -1,4 +1,4 @@
-import { DRACOLoader, GLTFLoader } from "three/examples/jsm/Addons.js";
+import { GLTFLoader } from "three/examples/jsm/Addons.js";
 import { LoadedAvatar } from "./types";
 import { AVATAR_ARMATURE_NAME } from "./config";
 

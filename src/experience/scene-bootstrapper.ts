@@ -1,6 +1,6 @@
+import assign from "object-assign";
 import * as Three from "three";
 import { SceneRuntime } from "./types";
-import assign from "object-assign";
 
 export interface SceneBootstrapConfig {
   readonly fov: number;

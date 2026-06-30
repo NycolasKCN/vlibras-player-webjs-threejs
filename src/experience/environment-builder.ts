@@ -1,6 +1,6 @@
 import * as Three from "three";
-import { SceneRuntime } from "./types";
 import { OrbitControls } from "three/examples/jsm/Addons";
+import { SceneRuntime } from "./types";
 
 export interface EnvironmentConfig {
   readonly controlsTarget: [number, number, number];

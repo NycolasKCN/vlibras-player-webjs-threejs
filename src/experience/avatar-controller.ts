@@ -2,18 +2,23 @@ import { EventEmitter } from "events";
 import * as Three from "three";
 import { AvatarLoader, GltfAvatarLoader } from "./avatar-loader";
 import {
-    AVATAR_ARMATURE_NAME,
-    DEFAULT_PERSONALIZATION,
-    EMOTION_MORPH_MAP,
-    EYES_MESH_NAME,
-    FACE_MESH_NAME,
-    HAIR_MESH_NAME,
-    IRIS_MESH_NAME,
-    PANTS_MESH_NAME,
-    SHIRT_MESH_NAME,
-    STAMP_CENTER_NAME,
+  AVATAR_ARMATURE_NAME,
+  DEFAULT_PERSONALIZATION,
+  EMOTION_MORPH_MAP,
+  EYES_MESH_NAME,
+  FACE_MESH_NAME,
+  HAIR_MESH_NAME,
+  IRIS_MESH_NAME,
+  PANTS_MESH_NAME,
+  SHIRT_MESH_NAME,
+  STAMP_CENTER_NAME,
 } from "./config";
-import { AvatarName, AvatarPersonalization, EMOTION, LoadedAvatar } from "./types";
+import {
+  AvatarName,
+  AvatarPersonalization,
+  EMOTION,
+  LoadedAvatar,
+} from "./types";
 
 export interface AvatarController extends EventEmitter {
   load(scene: Three.Scene): Promise<LoadedAvatar>;

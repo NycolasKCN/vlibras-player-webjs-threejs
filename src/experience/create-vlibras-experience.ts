@@ -1,11 +1,14 @@
-import {VLibrasExperience, VLibrasExperienceDependencies,} from "./VLibrasExperience";
-import {MixerAnimationController} from "./animation-controller";
-import {ThreeEnvironmentBuilder} from "./environment-builder";
-import {ResponsiveRenderLoop} from "./render-loop";
-import {ObjectTreeSceneDebugger} from "./scene-debugger";
-import {ThreeSceneBootstrapper} from "./scene-bootstrapper";
-import {HtmlSubtitleController} from "./subtitle-controller";
-import {AvatarControllerImpl} from "./avatar-controller";
+import {
+  VLibrasExperience,
+  VLibrasExperienceDependencies,
+} from "./VLibrasExperience";
+import { MixerAnimationController } from "./animation-controller";
+import { AvatarControllerImpl } from "./avatar-controller";
+import { ThreeEnvironmentBuilder } from "./environment-builder";
+import { ResponsiveRenderLoop } from "./render-loop";
+import { ThreeSceneBootstrapper } from "./scene-bootstrapper";
+import { ObjectTreeSceneDebugger } from "./scene-debugger";
+import { HtmlSubtitleController } from "./subtitle-controller";
 
 export function createVLibrasExperience(
   wrapper: HTMLElement,
