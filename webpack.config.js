@@ -39,9 +39,11 @@ export default {
   plugins: [
     new CopyWebpackPlugin({
       patterns: [
-        { from: "src/target", to: "target" },
         {
-          from: path.resolve(__dirname, "node_modules/three/examples/jsm/libs/draco"),
+          from: path.resolve(
+            __dirname,
+            "node_modules/three/examples/jsm/libs/draco",
+          ),
           to: path.resolve(__dirname, "build/libs/js/draco"),
         },
       ],
