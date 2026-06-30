@@ -1,13 +1,18 @@
-var path = require("path");
-var CopyWebpackPlugin = require("copy-webpack-plugin");
+// webpack.config.js
+import * as path from "path";
+import { fileURLToPath } from "url";
+import CopyWebpackPlugin from "copy-webpack-plugin";
 
-module.exports = {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default {
   mode: "production",
   target: ["web", "es5"],
-  entry: path.resolve("./src/index.ts"),
+  entry: path.resolve(__dirname, "./src/index.ts"),
   output: {
     filename: "vlibras.js",
-    path: path.resolve("./build"),
+    path: path.resolve(__dirname, "./build"),
     clean: true,
     library: {
       name: "VLibras",
@@ -19,7 +24,7 @@ module.exports = {
   resolve: {
     extensions: [".ts", ".js"],
     fallback: {
-      events: require.resolve("events/"),
+      events: "events/",
     },
   },
   module: {
@@ -33,7 +38,13 @@ module.exports = {
   },
   plugins: [
     new CopyWebpackPlugin({
-      patterns: [{ from: "src/target", to: "target" }],
+      patterns: [
+        { from: "src/target", to: "target" },
+        {
+          from: path.resolve(__dirname, "node_modules/three/examples/jsm/libs/draco"),
+          to: path.resolve(__dirname, "build/libs/js/draco"),
+        },
+      ],
     }),
   ],
 };

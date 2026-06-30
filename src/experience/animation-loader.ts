@@ -1,6 +1,7 @@
 import { AnimationClip } from "three";
-import { GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
+import { DRACOLoader, GLTF, GLTFLoader } from "three/examples/jsm/Addons.js";
 import { GlossAnimationClip } from "./types";
+import { DRACO_DECODER_PATH } from "./config";
 
 export interface AnimationLoader {
   load(words: string[]): Promise<GlossAnimationClip[]>;
@@ -11,8 +12,13 @@ export class GltfAnimationLoader implements AnimationLoader {
     private readonly loader: GLTFLoader = new GLTFLoader().setCrossOrigin(
       "anonymous",
     ),
+    private readonly dracoLoader: DRACOLoader = new DRACOLoader(),
     private readonly baseUrl: string = "http://192.168.36.100:8000/static/glb/glosa/",
-  ) {}
+  ) {
+
+    dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
+    this.loader.setDRACOLoader(this.dracoLoader);
+  }
 
   public async load(words: string[]): Promise<GlossAnimationClip[]> {
     const promises: Promise<GLTF>[] = words.map((word) => {

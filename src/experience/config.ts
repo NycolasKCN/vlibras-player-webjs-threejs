@@ -1,5 +1,7 @@
 import { AvatarPersonalization, EMOTION, FaceMorphTargets } from "./types";
 
+export const DRACO_DECODER_PATH = "/libs/js/draco/";
+
 export const NEXT_ANIMATION_THRESHOLD = 70;
 export const ANIMATION_CROSS_FADE_TIME = 0.6;
 export const MAX_ANIMATION_SPEED = 2.5;
